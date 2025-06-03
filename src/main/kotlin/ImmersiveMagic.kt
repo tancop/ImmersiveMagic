@@ -83,23 +83,18 @@ class ImmersiveMagic
                     }
 
                     Items.GLASS_BOTTLE -> {
-                        LOGGER.info("Take out potion")
                         if (blockEntry != null) {
                             val ingredientSet = blockEntry.items.map { it.item }.toSet()
 
                             Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
                                 if (fireType == fireNeeded) {
+                                    LOGGER.info("Taking out potion")
                                     val contents = PotionContents(potion)
                                     val potionStack = ItemStack(Items.POTION, 1)
                                     potionStack.set(DataComponents.POTION_CONTENTS, contents)
 
                                     event.entity.inventory.add(potionStack)
                                 }
-                            }
-
-                            if (state.getValue(LayeredCauldronBlock.LEVEL) == 1) {
-                                // Player took out the last potion
-                                blockEntry.items = emptyList()
                             }
                         }
                     }
@@ -122,6 +117,33 @@ class ImmersiveMagic
                 chunk.isUnsaved = true
 
                 LOGGER.info("Cauldron Data: ${blockEntry?.items?.map { it.displayName.string }}")
+            }
+
+            // Block is an empty cauldron, check if the player is filling it up
+            (event.level.getBlockState(event.pos).block as? CauldronBlock)?.let { block ->
+                if (event.itemStack.item == Items.POTION) {
+                    val chunk = event.level.getChunk(event.pos)
+
+                    val data = chunk.getData(CAULDRON_DATA)
+                    var blockEntry = data.items.find { it.first == event.pos }?.second
+
+                    val stack = event.itemStack
+
+                    val comp = stack.get(DataComponents.POTION_CONTENTS)
+
+                    if (blockEntry != null && comp?.`is`(Potions.WATER) ?: false) {
+                        blockEntry.items = emptyList()
+                    }
+                } else if (event.itemStack.item == Items.WATER_BUCKET) {
+                    val chunk = event.level.getChunk(event.pos)
+
+                    val data = chunk.getData(CAULDRON_DATA)
+                    var blockEntry = data.items.find { it.first == event.pos }?.second
+
+                    if (blockEntry != null) {
+                        blockEntry.items = emptyList()
+                    }
+                }
             }
         }
 
