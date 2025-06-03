@@ -43,15 +43,21 @@ class ImmersiveMagic
                     }"
                 )
 
+                if (event.itemStack.item !in Recipes.acceptedItems) return@addListener
+
+                val newStack = event.itemStack.copy()
+                event.itemStack.shrink(1)
+                newStack.count = 1
+
                 val chunk = event.level.getChunk(event.pos)
-                
+
                 val data = chunk.getData(CAULDRON_DATA)
                 var blockEntry = data.items.find { it.first == event.pos }?.second
 
                 if (blockEntry != null) {
-                    blockEntry.items = blockEntry.items + event.itemStack
+                    blockEntry.items = blockEntry.items + newStack
                 } else {
-                    val newEntry = CauldronData(mutableListOf(event.itemStack))
+                    val newEntry = CauldronData(mutableListOf(newStack))
                     data.items = data.items + MojangPair(event.pos, newEntry)
                     blockEntry = newEntry
                 }
@@ -104,7 +110,7 @@ class ImmersiveMagic
 
 
         val ATTACHMENT_TYPES: DeferredRegister<AttachmentType<*>?> =
-            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
+            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID)
 
         val CAULDRON_DATA = ATTACHMENT_TYPES.register(
             "cauldron_data",
