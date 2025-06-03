@@ -1,10 +1,12 @@
 package dev.tancop.immersivemagic
 
 import com.mojang.logging.LogUtils
-import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.block.AbstractCauldronBlock
+import net.minecraft.world.item.alchemy.PotionContents
+import net.minecraft.world.item.alchemy.Potions
+import net.minecraft.world.level.block.*
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
@@ -35,46 +37,91 @@ class ImmersiveMagic
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { event ->
             if (event.level.isClientSide) return@addListener
 
-            (event.level.getBlockState(event.pos).block as? AbstractCauldronBlock)?.let { block ->
-                LOGGER.info(
-                    "Right Clicked Cauldron: ${block.name.string} with ${
-                        event.itemStack
-                            .displayName.string
-                    }"
-                )
+            // Block is a cauldron with water
+            (event.level.getBlockState(event.pos).block as? LayeredCauldronBlock)?.let { block ->
+                if (event.itemStack.item !in (Recipes.acceptedItems + Items.GLASS_BOTTLE + Items.POTION)) return@addListener
 
-                if (event.itemStack.item !in Recipes.acceptedItems) return@addListener
+                val lowerPos = event.pos.offset(0, -1, 0)
+                val lowerState = event.level.getBlockState(lowerPos)
 
-                val newStack = event.itemStack.copy()
-                event.itemStack.shrink(1)
-                newStack.count = 1
+                val lowerBlock = lowerState.block
+                var fireType = when (lowerBlock) {
+                    is CampfireBlock -> FireType.NORMAL
+                    is FireBlock -> FireType.NORMAL
+                    is SoulFireBlock -> FireType.SOUL
+                    else -> return@addListener
+                }
+
+                // Unlit campfires don't work
+                if (lowerBlock is CampfireBlock && !lowerState.getValue(CampfireBlock.LIT)) return@addListener
+                // Set type to soul if it's a soul fire
+                if (lowerState.`is`(Blocks.SOUL_CAMPFIRE)) fireType = FireType.SOUL
+
+                LOGGER.info("Fire Type: $fireType")
 
                 val chunk = event.level.getChunk(event.pos)
 
                 val data = chunk.getData(CAULDRON_DATA)
                 var blockEntry = data.items.find { it.first == event.pos }?.second
 
-                if (blockEntry != null) {
-                    blockEntry.items = blockEntry.items + newStack
-                } else {
-                    val newEntry = CauldronData(mutableListOf(newStack))
-                    data.items = data.items + MojangPair(event.pos, newEntry)
-                    blockEntry = newEntry
+                val stack = event.itemStack
+                val item = stack.item
+
+                val state = event.level.getBlockState(event.pos)
+
+                when (item) {
+                    Items.POTION -> {
+                        val comp = stack.get(DataComponents.POTION_CONTENTS)
+                        LOGGER.info("Used potion ${comp?.potion} on cauldron")
+                        if (blockEntry != null
+                            && state.getValue(LayeredCauldronBlock.LEVEL) < LayeredCauldronBlock.MAX_FILL_LEVEL
+                            && comp?.`is`(Potions.WATER) ?: false
+                        ) {
+                            LOGGER.info("Diluted potion")
+                            blockEntry.items = emptyList()
+                        }
+                    }
+
+                    Items.GLASS_BOTTLE -> {
+                        LOGGER.info("Take out potion")
+                        if (blockEntry != null) {
+                            val ingredientSet = blockEntry.items.map { it.item }.toSet()
+
+                            Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
+                                if (fireType == fireNeeded) {
+                                    val contents = PotionContents(potion)
+                                    val potionStack = ItemStack(Items.POTION, 1)
+                                    potionStack.set(DataComponents.POTION_CONTENTS, contents)
+
+                                    event.entity.inventory.add(potionStack)
+                                }
+                            }
+
+                            if (state.getValue(LayeredCauldronBlock.LEVEL) == 1) {
+                                // Player took out the last potion
+                                blockEntry.items = emptyList()
+                            }
+                        }
+                    }
+
+                    else -> {
+                        val newStack = stack.copy()
+                        stack.shrink(1)
+                        newStack.count = 1
+
+                        if (blockEntry != null) {
+                            blockEntry.items = blockEntry.items + newStack
+                        } else {
+                            val newEntry = CauldronData(mutableListOf(newStack))
+                            data.items = data.items + MojangPair(event.pos, newEntry)
+                            blockEntry = newEntry
+                        }
+                    }
                 }
 
                 chunk.isUnsaved = true
 
-                LOGGER.info("Cauldron Data: ${blockEntry.items.map { it.displayName.string }}")
-
-                event.level.addFreshEntity(
-                    ItemEntity(
-                        event.level,
-                        event.pos.x.toDouble(),
-                        event.pos.y.toDouble() + 1,
-                        event.pos.z.toDouble(),
-                        ItemStack(Items.POTION, 1)
-                    )
-                )
+                LOGGER.info("Cauldron Data: ${blockEntry?.items?.map { it.displayName.string }}")
             }
         }
 
