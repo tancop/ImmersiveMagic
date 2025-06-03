@@ -2,6 +2,9 @@ package dev.tancop.immersivemagic
 
 import com.mojang.logging.LogUtils
 import net.minecraft.core.component.DataComponents
+import net.minecraft.core.particles.ColorParticleOption
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.PotionContents
@@ -83,10 +86,10 @@ class ImmersiveMagic
                     }
 
                     Items.GLASS_BOTTLE -> {
-                        if (blockEntry != null) {
+                        if (blockEntry != null && blockEntry.items.isNotEmpty()) {
                             val ingredientSet = blockEntry.items.map { it.item }.toSet()
 
-                            Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
+                            val foundRecipe = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
                                 if (fireType == fireNeeded) {
                                     LOGGER.info("Taking out potion")
                                     val contents = PotionContents(potion)
@@ -112,6 +115,23 @@ class ImmersiveMagic
                     }
 
                     else -> {
+                        (event.level as? ServerLevel)?.let { level ->
+                            val particle = ColorParticleOption.create(
+                                ParticleTypes.ENTITY_EFFECT,
+                                0.1f, 0.2f, 0.8f
+                            )
+
+                            level.sendParticles(
+                                particle,
+                                event.pos.x.toDouble() + 0.5,
+                                event.pos.y.toDouble() + 1.5,
+                                event.pos.z.toDouble() + 0.5,
+                                30,
+                                0.1, 0.5, 0.1,
+                                0.5
+                            )
+                        }
+
                         val newStack = stack.copy()
                         stack.shrink(1)
                         newStack.count = 1
