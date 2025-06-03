@@ -95,7 +95,19 @@ class ImmersiveMagic
 
                                     event.entity.inventory.add(potionStack)
                                 }
+                                true
+                            } ?: false
+
+                            if (!foundRecipe) {
+                                LOGGER.info("Taking out bad potion")
+                                val contents = PotionContents(Potions.MUNDANE)
+                                val potionStack = ItemStack(Items.POTION, 1)
+                                potionStack.set(DataComponents.POTION_CONTENTS, contents)
+
+                                event.entity.inventory.add(potionStack)
                             }
+
+                            event.isCanceled = true
                         }
                     }
 
