@@ -3,7 +3,7 @@ package dev.tancop.immersivemagic
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potions
 
-enum class FireType {
+enum class FireType : Comparable<FireType> {
     NORMAL, SOUL, BLAZE,
 }
 
