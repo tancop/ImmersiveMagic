@@ -24,12 +24,6 @@ sealed class PotionRef {
     }
 
     data class CustomPotion(val name: String, val effects: List<MobEffectInstance>, val color: Int) : PotionRef() {
-        constructor(name: String, effects: List<MobEffectInstance>, color: Color) : this(
-            name,
-            effects,
-            color.toPacked()
-        )
-
         override fun getStack(): ItemStack {
             val contents = PotionContents(
                 Optional.of(Potions.WATER),
@@ -51,10 +45,7 @@ sealed class PotionRef {
     companion object {
         fun of(potion: Holder<Potion>): PotionRef =
             GamePotion(potion)
-
-        fun of(name: String, effects: List<MobEffectInstance>, color: Color): PotionRef =
-            CustomPotion(name, effects, color)
-
+        
         fun of(name: String, effects: List<MobEffectInstance>, color: Int): PotionRef =
             CustomPotion(name, effects, color)
     }
