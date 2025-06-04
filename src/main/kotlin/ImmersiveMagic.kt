@@ -1,9 +1,11 @@
 package dev.tancop.immersivemagic
 
+import com.google.gson.Gson
 import com.mojang.logging.LogUtils
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.FastColor
 import net.minecraft.world.item.ItemStack
@@ -17,14 +19,16 @@ import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
 import net.neoforged.neoforge.attachment.AttachmentType
+import net.neoforged.neoforge.capabilities.BlockCapability
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.event.level.BlockEvent
+import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
 import net.neoforged.neoforge.registries.NeoForgeRegistries
 import org.slf4j.Logger
 import java.util.function.Supplier
-import com.mojang.datafixers.util.Pair as MojangPair
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ImmersiveMagic.Companion.MOD_ID)
@@ -63,10 +67,8 @@ class ImmersiveMagic
 
                 LOGGER.info("Fire Type: $fireType")
 
-                val chunk = event.level.getChunk(event.pos)
-
-                val data = chunk.getData(CAULDRON_DATA)
-                var blockEntry = data.items.find { it.first == event.pos }?.second
+                val data =
+                    event.level.getCapability(CAULDRON_DATA, event.pos, event.level.getBlockState(event.pos), null)!!
 
                 val stack = event.itemStack
                 val item = stack.item
@@ -77,18 +79,17 @@ class ImmersiveMagic
                     Items.POTION -> {
                         val comp = stack.get(DataComponents.POTION_CONTENTS)
                         LOGGER.info("Used potion ${comp?.potion} on cauldron")
-                        if (blockEntry != null
-                            && state.getValue(LayeredCauldronBlock.LEVEL) < LayeredCauldronBlock.MAX_FILL_LEVEL
+                        if (state.getValue(LayeredCauldronBlock.LEVEL) < LayeredCauldronBlock.MAX_FILL_LEVEL
                             && comp?.`is`(Potions.WATER) ?: false
                         ) {
                             LOGGER.info("Diluted potion")
-                            blockEntry.items = emptyList()
+                            data.items = mutableListOf()
                         }
                     }
 
                     Items.GLASS_BOTTLE -> {
-                        if (blockEntry != null && blockEntry.items.isNotEmpty()) {
-                            val ingredientSet = blockEntry.items.map { it.item }.toSet()
+                        if (data.items.isNotEmpty()) {
+                            val ingredientSet = data.items.map { it.item }.toSet()
 
                             val foundRecipe = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
                                 if (fireType >= fireNeeded) {
@@ -112,25 +113,18 @@ class ImmersiveMagic
                     }
 
                     else -> {
-                        val newStack = stack.copy()
-                        newStack.count = 1
-
-                        if (blockEntry != null) {
-                            if (blockEntry.items.none { it.item == newStack.item }) {
-                                blockEntry.items = blockEntry.items + newStack
-                                stack.shrink(1)
-                            }
-                        } else {
-                            val newEntry = CauldronData(mutableListOf(newStack))
-                            data.items = data.items + MojangPair(event.pos, newEntry)
-                            blockEntry = newEntry
+                        if (data.items.none { it.item == stack.item }) {
+                            println("Adding new item: ${stack.item}")
+                            val newStack = stack.copy()
+                            newStack.count = 1
+                            data.items.add(newStack)
                             stack.shrink(1)
                         }
 
                         // Emit colored particles if the current ingredients are a valid potion,
                         // white particles if not
                         (event.level as? ServerLevel)?.let { level ->
-                            val ingredientSet = blockEntry.items.map { it.item }.toSet()
+                            val ingredientSet = data.items.map { it.item }.toSet()
                             val color = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
                                 if (fireType >= fireNeeded)
                                     return@let potion.getEffectColor()
@@ -155,35 +149,24 @@ class ImmersiveMagic
                     }
                 }
 
-                chunk.isUnsaved = true
-
-                LOGGER.info("Cauldron Data: ${blockEntry?.items?.map { it.displayName.string }}")
+                LOGGER.info("Cauldron Data: ${data.items.map { it.displayName.string }}")
             }
 
             // Block is an empty cauldron, check if the player is filling it up
             (event.level.getBlockState(event.pos).block as? CauldronBlock)?.let { block ->
+                val data =
+                    event.level.getCapability(CAULDRON_DATA, event.pos, event.level.getBlockState(event.pos), null)
+                        ?: CauldronData(mutableListOf())
                 if (event.itemStack.item == Items.POTION) {
-                    val chunk = event.level.getChunk(event.pos)
-
-                    val data = chunk.getData(CAULDRON_DATA)
-                    var blockEntry = data.items.find { it.first == event.pos }?.second
-
                     val stack = event.itemStack
 
                     val comp = stack.get(DataComponents.POTION_CONTENTS)
 
-                    if (blockEntry != null && comp?.`is`(Potions.WATER) ?: false) {
-                        blockEntry.items = emptyList()
+                    if (comp?.`is`(Potions.WATER) ?: false) {
+                        data.items = mutableListOf()
                     }
                 } else if (event.itemStack.item == Items.WATER_BUCKET) {
-                    val chunk = event.level.getChunk(event.pos)
-
-                    val data = chunk.getData(CAULDRON_DATA)
-                    var blockEntry = data.items.find { it.first == event.pos }?.second
-
-                    if (blockEntry != null) {
-                        blockEntry.items = emptyList()
-                    }
+                    data.items = mutableListOf()
                 }
             }
         }
@@ -195,10 +178,29 @@ class ImmersiveMagic
 
             val chunk = event.level.getChunk(event.pos)
 
-            val data = chunk.getData(CAULDRON_DATA)
-            data.items = data.items.filter { it.first != event.pos }
+            val data = chunk.getData(CHUNK_DATA)
+            data.items = data.items.filter { it.key != event.pos }.toMutableMap()
 
             chunk.isUnsaved = true
+        }
+
+        modEventBus.addListener<RegisterCapabilitiesEvent> { event ->
+            event.registerBlock(
+                CAULDRON_DATA,
+                { level, pos, state, entity, _ ->
+                    val chunkData = level.getChunk(pos).getData(CHUNK_DATA)
+                    var stored = chunkData.items[pos]
+
+                    if (stored == null) {
+                        stored = CauldronData(mutableListOf())
+                        chunkData.items[pos] = stored
+                    }
+
+                    stored
+                },
+                Blocks.CAULDRON,
+                Blocks.WATER_CAULDRON,
+            )
         }
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
@@ -218,17 +220,21 @@ class ImmersiveMagic
         // Directly reference a slf4j logger
         private val LOGGER: Logger = LogUtils.getLogger()
 
+        val GSON = Gson()
 
-        val ATTACHMENT_TYPES: DeferredRegister<AttachmentType<*>?> =
+        val ATTACHMENT_TYPES: DeferredRegister<AttachmentType<*>> =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID)
 
-        val CAULDRON_DATA = ATTACHMENT_TYPES.register(
-            "cauldron_data",
-            Supplier {
-                AttachmentType.builder(Supplier {
-                    ChunkData(mutableListOf())
-                }).serialize(ChunkData.CODEC).build()
-            }
+        val CHUNK_DATA: DeferredHolder<AttachmentType<*>?, AttachmentType<ChunkData>?> =
+            ATTACHMENT_TYPES.register("cauldron_data", Supplier {
+                AttachmentType.builder(Supplier { ChunkData(mutableMapOf()) })
+                    .serialize(ChunkData.CODEC)
+                    .build()
+            })
+
+        val CAULDRON_DATA: BlockCapability<CauldronData, Void?> = BlockCapability.createVoid<CauldronData>(
+            ResourceLocation.tryBuild(MOD_ID, "cauldron_data")!!,
+            CauldronData::class.java
         )
     }
 }
