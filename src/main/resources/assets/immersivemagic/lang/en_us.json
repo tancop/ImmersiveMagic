@@ -1,5 +1,3 @@
 {
-  "itemGroup.immersivemagic": "Example Mod Tab",
-  "block.immersivemagic.example_block": "Example Block",
-  "item.immersivemagic.example_item": "Example Item"
+  "potion.immersivemagic.decay_potion": "Potion of Decay"
 }

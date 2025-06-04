@@ -92,11 +92,7 @@ class ImmersiveMagic
                             val foundRecipe = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
                                 if (fireType >= fireNeeded) {
                                     LOGGER.info("Taking out potion")
-                                    val contents = PotionContents(potion)
-                                    val potionStack = ItemStack(Items.POTION, 1)
-                                    potionStack.set(DataComponents.POTION_CONTENTS, contents)
-
-                                    event.entity.inventory.add(potionStack)
+                                    event.entity.inventory.add(potion.getStack())
                                 }
                                 true
                             } ?: false
