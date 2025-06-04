@@ -142,10 +142,10 @@ class ImmersiveMagic
                             level.sendParticles(
                                 particle,
                                 event.pos.x.toDouble() + 0.5,
-                                event.pos.y.toDouble() + 1.5,
+                                event.pos.y.toDouble() + 1.0,
                                 event.pos.z.toDouble() + 0.5,
-                                30,
-                                0.1, 0.5, 0.1,
+                                20,
+                                0.0, 0.2, 0.0,
                                 0.5
                             )
                         }
