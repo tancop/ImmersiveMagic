@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.util.FastColor
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.PotionContents
@@ -111,10 +112,31 @@ class ImmersiveMagic
                     }
 
                     else -> {
+                        val newStack = stack.copy()
+                        stack.shrink(1)
+                        newStack.count = 1
+
+                        if (blockEntry != null) {
+                            blockEntry.items = blockEntry.items + newStack
+                        } else {
+                            val newEntry = CauldronData(mutableListOf(newStack))
+                            data.items = data.items + MojangPair(event.pos, newEntry)
+                            blockEntry = newEntry
+                        }
+
+                        // Emit colored particles if the current ingredients are a valid potion,
+                        // white particles if not
                         (event.level as? ServerLevel)?.let { level ->
+                            val ingredientSet = blockEntry.items.map { it.item }.toSet()
+                            val color = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
+                                if (fireType >= fireNeeded)
+                                    return@let potion.getEffectColor()
+                                FastColor.ARGB32.color(255, 255, 255) // White
+                            } ?: FastColor.ARGB32.color(255, 255, 255)
+
                             val particle = ColorParticleOption.create(
                                 ParticleTypes.ENTITY_EFFECT,
-                                0.1f, 0.2f, 0.8f
+                                color
                             )
 
                             level.sendParticles(
@@ -126,18 +148,6 @@ class ImmersiveMagic
                                 0.1, 0.5, 0.1,
                                 0.5
                             )
-                        }
-
-                        val newStack = stack.copy()
-                        stack.shrink(1)
-                        newStack.count = 1
-
-                        if (blockEntry != null) {
-                            blockEntry.items = blockEntry.items + newStack
-                        } else {
-                            val newEntry = CauldronData(mutableListOf(newStack))
-                            data.items = data.items + MojangPair(event.pos, newEntry)
-                            blockEntry = newEntry
                         }
                     }
                 }

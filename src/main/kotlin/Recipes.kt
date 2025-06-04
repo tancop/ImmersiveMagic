@@ -1,5 +1,6 @@
 package dev.tancop.immersivemagic
 
+import net.minecraft.util.FastColor
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.item.Items
@@ -19,7 +20,7 @@ object Recipes {
                 listOf(
                     MobEffectInstance(MobEffects.WITHER, 800)
                 ),
-                0x736156
+                FastColor.ARGB32.opaque(0x736156)
             )
         ),
     )

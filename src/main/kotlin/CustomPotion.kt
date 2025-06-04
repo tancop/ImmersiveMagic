@@ -19,6 +19,8 @@ sealed class PotionRef {
             stack.set(DataComponents.POTION_CONTENTS, contents)
             return stack
         }
+
+        override fun getEffectColor(): Int = PotionContents.getColor(potion)
     }
 
     data class CustomPotion(val name: String, val effects: List<MobEffectInstance>, val color: Int) : PotionRef() {
@@ -39,9 +41,12 @@ sealed class PotionRef {
             stack.set(DataComponents.ITEM_NAME, Component.translatable(name))
             return stack
         }
+
+        override fun getEffectColor(): Int = color
     }
 
     abstract fun getStack(): ItemStack
+    abstract fun getEffectColor(): Int
 
     companion object {
         fun of(potion: Holder<Potion>): PotionRef =
