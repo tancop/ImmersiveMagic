@@ -113,15 +113,18 @@ class ImmersiveMagic
 
                     else -> {
                         val newStack = stack.copy()
-                        stack.shrink(1)
                         newStack.count = 1
 
                         if (blockEntry != null) {
-                            blockEntry.items = blockEntry.items + newStack
+                            if (blockEntry.items.none { it.item == newStack.item }) {
+                                blockEntry.items = blockEntry.items + newStack
+                                stack.shrink(1)
+                            }
                         } else {
                             val newEntry = CauldronData(mutableListOf(newStack))
                             data.items = data.items + MojangPair(event.pos, newEntry)
                             blockEntry = newEntry
+                            stack.shrink(1)
                         }
 
                         // Emit colored particles if the current ingredients are a valid potion,
