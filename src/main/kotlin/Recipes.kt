@@ -3,6 +3,7 @@ package dev.tancop.immersivemagic
 import net.minecraft.util.FastColor
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potions
 
@@ -11,7 +12,7 @@ enum class FireType : Comparable<FireType> {
 }
 
 object Recipes {
-    val recipes = mapOf(
+    val recipes: Map<Set<Item>, Pair<FireType, PotionRef>> = mapOf(
         setOf(Items.MAGMA_CREAM) to Pair(FireType.NORMAL, PotionRef.of(Potions.FIRE_RESISTANCE)),
         setOf(Items.LIGHT_BLUE_DYE, Items.SUGAR) to Pair(FireType.NORMAL, PotionRef.of(Potions.SWIFTNESS)),
         setOf(Items.WITHER_ROSE) to Pair(

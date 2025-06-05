@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.FastColor
@@ -13,6 +14,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.alchemy.Potions
 import net.minecraft.world.level.block.*
+import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
@@ -23,7 +25,6 @@ import net.neoforged.neoforge.capabilities.BlockCapability
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import net.neoforged.neoforge.event.level.BlockEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
 import net.neoforged.neoforge.registries.NeoForgeRegistries
@@ -40,6 +41,7 @@ class ImmersiveMagic
         // Register the commonSetup method for modloading
         modEventBus.addListener<FMLCommonSetupEvent> { event -> this.commonSetup(event) }
         ATTACHMENT_TYPES.register(modEventBus)
+        BLOCK_ENTITY_TYPES.register(modEventBus)
 
         // Listen for right clicks on cauldrons
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { event ->
@@ -48,6 +50,11 @@ class ImmersiveMagic
             // Block is a cauldron with water
             (event.level.getBlockState(event.pos).block as? LayeredCauldronBlock)?.let { block ->
                 if (event.itemStack.item !in (Recipes.acceptedItems + Items.GLASS_BOTTLE + Items.POTION)) return@addListener
+
+                val entity = (event.level.getBlockEntity(event.pos) as? WaterCauldronBlockEntity)
+                    ?: WaterCauldronBlockEntity(event.pos, event.level.getBlockState(event.pos)).also {
+                        event.level.setBlockEntity(it)
+                    }
 
                 val lowerPos = event.pos.offset(0, -1, 0)
                 val lowerState = event.level.getBlockState(lowerPos)
@@ -67,9 +74,6 @@ class ImmersiveMagic
 
                 LOGGER.info("Fire Type: $fireType")
 
-                val data =
-                    event.level.getCapability(CAULDRON_DATA, event.pos, event.level.getBlockState(event.pos), null)!!
-
                 val stack = event.itemStack
                 val item = stack.item
 
@@ -83,15 +87,15 @@ class ImmersiveMagic
                             && comp?.`is`(Potions.WATER) ?: false
                         ) {
                             LOGGER.info("Diluted potion")
-                            data.items = mutableListOf()
+                            entity.items.clear()
                         }
                     }
 
                     Items.GLASS_BOTTLE -> {
-                        if (data.items.isNotEmpty()) {
-                            val ingredientSet = data.items.map { it.item }.toSet()
+                        if (entity.items.isNotEmpty()) {
+                            val itemSet = entity.items.map { it.item }.toSet()
 
-                            val foundRecipe = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
+                            val foundRecipe = Recipes.recipes[itemSet]?.let { (fireNeeded, potion) ->
                                 if (fireType >= fireNeeded) {
                                     LOGGER.info("Taking out potion")
                                     event.entity.inventory.add(potion.getStack())
@@ -113,19 +117,19 @@ class ImmersiveMagic
                     }
 
                     else -> {
-                        if (data.items.none { it.item == stack.item }) {
+                        if (entity.items.none { it.item == stack.item }) {
                             println("Adding new item: ${stack.item}")
                             val newStack = stack.copy()
                             newStack.count = 1
-                            data.items.add(newStack)
+                            entity.items.add(newStack)
                             stack.shrink(1)
                         }
 
                         // Emit colored particles if the current ingredients are a valid potion,
                         // white particles if not
                         (event.level as? ServerLevel)?.let { level ->
-                            val ingredientSet = data.items.map { it.item }.toSet()
-                            val color = Recipes.recipes[ingredientSet]?.let { (fireNeeded, potion) ->
+                            val itemSet = entity.items.map { it.item }.toSet()
+                            val color = Recipes.recipes[itemSet]?.let { (fireNeeded, potion) ->
                                 if (fireType >= fireNeeded)
                                     return@let potion.getEffectColor()
                                 FastColor.ARGB32.color(255, 255, 255) // White
@@ -149,39 +153,8 @@ class ImmersiveMagic
                     }
                 }
 
-                LOGGER.info("Cauldron Data: ${data.items.map { it.displayName.string }}")
+                LOGGER.info("Cauldron Data: ${entity.items.map { it.displayName.string }}")
             }
-
-            // Block is an empty cauldron, check if the player is filling it up
-            (event.level.getBlockState(event.pos).block as? CauldronBlock)?.let { block ->
-                val data =
-                    event.level.getCapability(CAULDRON_DATA, event.pos, event.level.getBlockState(event.pos), null)
-                        ?: CauldronData(mutableListOf())
-                if (event.itemStack.item == Items.POTION) {
-                    val stack = event.itemStack
-
-                    val comp = stack.get(DataComponents.POTION_CONTENTS)
-
-                    if (comp?.`is`(Potions.WATER) ?: false) {
-                        data.items = mutableListOf()
-                    }
-                } else if (event.itemStack.item == Items.WATER_BUCKET) {
-                    data.items = mutableListOf()
-                }
-            }
-        }
-
-
-        // Remove items from cauldrons when they are broken
-        NeoForge.EVENT_BUS.addListener<BlockEvent.BreakEvent> { event ->
-            if (event.level.isClientSide) return@addListener
-
-            val chunk = event.level.getChunk(event.pos)
-
-            val data = chunk.getData(CHUNK_DATA)
-            data.items = data.items.filter { it.key != event.pos }.toMutableMap()
-
-            chunk.isUnsaved = true
         }
 
         modEventBus.addListener<RegisterCapabilitiesEvent> { event ->
@@ -236,5 +209,21 @@ class ImmersiveMagic
             ResourceLocation.tryBuild(MOD_ID, "cauldron_data")!!,
             CauldronData::class.java
         )
+
+        val BLOCK_ENTITY_TYPES: DeferredRegister<BlockEntityType<*>> =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+
+        val WATER_CAULDRON_BLOCK_ENTITY: DeferredHolder<BlockEntityType<*>, BlockEntityType<WaterCauldronBlockEntity>> =
+            BLOCK_ENTITY_TYPES.register(
+                "water_cauldron",
+                Supplier {
+                    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+                    // Building with null works just fine
+
+                    BlockEntityType.Builder.of(
+                        { pos, state -> WaterCauldronBlockEntity(pos, state) },
+                        Blocks.WATER_CAULDRON
+                    ).build(null)
+                })
     }
 }

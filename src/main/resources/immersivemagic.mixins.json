@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "dev.tancop.immersivemagic.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "mixins.ImmersiveMagic.refmap.json",
+  "mixins": [
+    "LayeredCauldronBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
