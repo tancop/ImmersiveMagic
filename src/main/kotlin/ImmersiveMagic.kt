@@ -6,7 +6,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.Registries
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.FastColor
 import net.minecraft.world.item.ItemStack
@@ -19,15 +18,10 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
-import net.neoforged.neoforge.attachment.AttachmentType
-import net.neoforged.neoforge.capabilities.BlockCapability
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
-import net.neoforged.neoforge.registries.NeoForgeRegistries
 import org.slf4j.Logger
 import java.util.function.Supplier
 
@@ -38,9 +32,6 @@ class ImmersiveMagic
     // The constructor for the mod class is the first code run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     init {
-        // Register the commonSetup method for modloading
-        modEventBus.addListener<FMLCommonSetupEvent> { event -> this.commonSetup(event) }
-        ATTACHMENT_TYPES.register(modEventBus)
         BLOCK_ENTITY_TYPES.register(modEventBus)
 
         // Listen for right clicks on cauldrons
@@ -157,34 +148,8 @@ class ImmersiveMagic
             }
         }
 
-        modEventBus.addListener<RegisterCapabilitiesEvent> { event ->
-            event.registerBlock(
-                CAULDRON_DATA,
-                { level, pos, state, entity, _ ->
-                    val chunkData = level.getChunk(pos).getData(CHUNK_DATA)
-                    var stored = chunkData.items[pos]
-
-                    if (stored == null) {
-                        stored = CauldronData(mutableListOf())
-                        chunkData.items[pos] = stored
-                    }
-
-                    stored
-                },
-                Blocks.CAULDRON,
-                Blocks.WATER_CAULDRON,
-            )
-        }
-
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
     }
-
-    private fun commonSetup(event: FMLCommonSetupEvent) {
-        // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP")
-    }
-
 
     companion object {
         // Define mod id in a common place for everything to reference
@@ -195,23 +160,8 @@ class ImmersiveMagic
 
         val GSON = Gson()
 
-        val ATTACHMENT_TYPES: DeferredRegister<AttachmentType<*>> =
-            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID)
-
-        val CHUNK_DATA: DeferredHolder<AttachmentType<*>?, AttachmentType<ChunkData>?> =
-            ATTACHMENT_TYPES.register("cauldron_data", Supplier {
-                AttachmentType.builder(Supplier { ChunkData(mutableMapOf()) })
-                    .serialize(ChunkData.CODEC)
-                    .build()
-            })
-
-        val CAULDRON_DATA: BlockCapability<CauldronData, Void?> = BlockCapability.createVoid<CauldronData>(
-            ResourceLocation.tryBuild(MOD_ID, "cauldron_data")!!,
-            CauldronData::class.java
-        )
-
         val BLOCK_ENTITY_TYPES: DeferredRegister<BlockEntityType<*>> =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID)
 
         val WATER_CAULDRON_BLOCK_ENTITY: DeferredHolder<BlockEntityType<*>, BlockEntityType<WaterCauldronBlockEntity>> =
             BLOCK_ENTITY_TYPES.register(
