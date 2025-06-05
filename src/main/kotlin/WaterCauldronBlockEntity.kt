@@ -24,8 +24,7 @@ class WaterCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         for (i in 0..<itemList.size) {
             val item = itemList[i]
-            listTag.setTag(
-                i,
+            listTag.add(
                 ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, item).result().get()
             )
         }
