@@ -45,7 +45,7 @@ sealed class PotionRef {
     companion object {
         fun of(potion: Holder<Potion>): PotionRef =
             GamePotion(potion)
-        
+
         fun of(name: String, effects: List<MobEffectInstance>, color: Int): PotionRef =
             CustomPotion(name, effects, color)
     }
