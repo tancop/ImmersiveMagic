@@ -53,17 +53,7 @@ enum class FireType : Comparable<FireType> {
 
 object Recipes {
     val recipes: Map<Set<Item>, Pair<FireType, PotionRef>> = mapOf(
-        setOf(Items.MAGMA_CREAM) to Pair(FireType.NORMAL, PotionRef.of(Potions.FIRE_RESISTANCE)),
         setOf(Items.LIGHT_BLUE_DYE, Items.SUGAR) to Pair(FireType.NORMAL, PotionRef.of(Potions.SWIFTNESS)),
-        setOf(Items.WITHER_ROSE) to Pair(
-            FireType.SOUL, PotionRef.of(
-                "potion.immersivemagic.decay_potion",
-                listOf(
-                    MobEffectInstance(MobEffects.WITHER, 800)
-                ),
-                FastColor.ARGB32.opaque(0x736156)
-            )
-        ),
         setOf(Items.WITHER_ROSE, Items.GUNPOWDER) to Pair(
             FireType.SOUL, PotionRef.of(
                 "potion.immersivemagic.splash_decay_potion",
@@ -74,12 +64,22 @@ object Recipes {
                 PotionType.SPLASH
             )
         ),
+        setOf(Items.WITHER_ROSE) to Pair(
+            FireType.SOUL, PotionRef.of(
+                "potion.immersivemagic.decay_potion",
+                listOf(
+                    MobEffectInstance(MobEffects.WITHER, 800)
+                ),
+                FastColor.ARGB32.opaque(0x736156)
+            )
+        ),
         setOf(Items.HONEYCOMB) to Pair(
             FireType.NONE, PotionRef.of(
                 ItemStack(Items.HONEY_BOTTLE, 1),
                 FastColor.ARGB32.opaque(0xf7f12b)
             )
-        )
+        ),
+        setOf(Items.MAGMA_CREAM) to Pair(FireType.NORMAL, PotionRef.of(Potions.FIRE_RESISTANCE)),
     )
 
     val acceptedItems = recipes.keys.reduce { acc, set -> acc union set }
