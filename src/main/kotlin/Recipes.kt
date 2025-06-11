@@ -7,6 +7,7 @@ import net.minecraft.util.FastColor
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potions
 import net.minecraft.world.level.Level
@@ -73,6 +74,12 @@ object Recipes {
                 PotionType.SPLASH
             )
         ),
+        setOf(Items.HONEYCOMB) to Pair(
+            FireType.NONE, PotionRef.of(
+                ItemStack(Items.HONEY_BOTTLE, 1),
+                FastColor.ARGB32.opaque(0xf7f12b)
+            )
+        )
     )
 
     val acceptedItems = recipes.keys.reduce { acc, set -> acc union set }

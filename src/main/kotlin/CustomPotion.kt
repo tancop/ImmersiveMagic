@@ -54,6 +54,17 @@ sealed class PotionRef {
         override fun getEffectColor(): Int = color
     }
 
+    data class CustomItem(
+        val item: ItemStack,
+        val color: Int,
+    ) : PotionRef() {
+        override fun getStack(): ItemStack {
+            return item.copy()
+        }
+
+        override fun getEffectColor(): Int = color
+    }
+
     abstract fun getStack(): ItemStack
     abstract fun getEffectColor(): Int
 
@@ -68,5 +79,8 @@ sealed class PotionRef {
             type: PotionType = PotionType.NORMAL
         ): PotionRef =
             CustomPotion(name, effects, color, type)
+
+        fun of(item: ItemStack, color: Int): PotionRef =
+            CustomItem(item, color)
     }
 }
