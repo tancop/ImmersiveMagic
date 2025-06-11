@@ -133,7 +133,7 @@ object ExtraInteractions {
                 potionStack = PotionContents.createItemStack(Items.POTION, Potions.WATER)
             }
 
-            player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, potionStack))
+            player.inventory.add(potionStack)
 
             player.awardStat(Stats.USE_CAULDRON)
             player.awardStat(Stats.ITEM_USED.get(item))
@@ -159,7 +159,7 @@ object ExtraInteractions {
                         hand,
                         ItemUtils.createFilledResult(stack, player, ItemStack(Items.GLASS_BOTTLE))
                     )
-                    
+
                     player.awardStat(Stats.USE_CAULDRON)
                     player.awardStat(Stats.ITEM_USED.get(stack.item))
 
