@@ -31,14 +31,15 @@ public abstract class AbstractCauldronBlockMixin {
                            BlockHitResult hitResult, CallbackInfoReturnable<ItemInteractionResult> cir) {
         Item insertedItem = stack.getItem();
 
-        CauldronInteraction.WATER.map().remove(Items.GLASS_BOTTLE);
+        CauldronInteraction.WATER.map().put(Items.GLASS_BOTTLE, ExtraInteractions.INSTANCE.getBottleInteraction());
         CauldronInteraction.WATER.map().put(Items.WATER_BUCKET, ExtraInteractions.INSTANCE.getWaterBucketInteraction());
+        CauldronInteraction.WATER.map().put(Items.POTION, ExtraInteractions.INSTANCE.getPotionInteraction());
 
         CauldronInteraction interaction = this.interactions.map().get(insertedItem);
         ItemInteractionResult result = interaction.interact(state, level, pos, player, hand, stack);
 
         if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && !level.isClientSide) {
-            result = ExtraInteractions.INSTANCE.interact(stack, state, level, pos, player, hand);
+            result = ExtraInteractions.INSTANCE.fallbackInteract(stack, state, level, pos, player, hand);
         }
 
         cir.setReturnValue(result);

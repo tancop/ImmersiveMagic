@@ -11,8 +11,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 
+// Stores potion ingredients added to a cauldron
 class WaterCauldronBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state) {
+    BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state), BlockEntityExt {
 
     var items: MutableSet<ItemStack> = mutableSetOf()
 
@@ -42,5 +43,11 @@ class WaterCauldronBlockEntity(pos: BlockPos, state: BlockState) :
             val stack = ItemStack.CODEC.decode(NbtOps.INSTANCE, item).result().get().first
             items.add(stack)
         }
+    }
+
+    // Server-only block entity, if we send it to clients without this mod installed
+    // they will fail to deserialize the chunk packet
+    override fun immersiveMagic_isSerializable(): Boolean {
+        return false
     }
 }

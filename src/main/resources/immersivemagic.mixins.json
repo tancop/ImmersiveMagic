@@ -6,6 +6,8 @@
   "refmap": "mixins.ImmersiveMagic.refmap.json",
   "mixins": [
     "AbstractCauldronBlockMixin",
+    "BlockEntityMixin",
+    "ClientboundLevelChunkPacketDataMixin",
     "LayeredCauldronBlockMixin"
   ],
   "injectors": {
