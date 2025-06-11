@@ -11,6 +11,10 @@ import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.alchemy.Potions
 import java.util.*
 
+enum class PotionType {
+    NORMAL, SPLASH, LINGERING
+}
+
 sealed class PotionRef {
     data class GamePotion(val potion: Holder<Potion>) : PotionRef() {
         override fun getStack(): ItemStack {
@@ -23,14 +27,25 @@ sealed class PotionRef {
         override fun getEffectColor(): Int = PotionContents.getColor(potion)
     }
 
-    data class CustomPotion(val name: String, val effects: List<MobEffectInstance>, val color: Int) : PotionRef() {
+    data class CustomPotion(
+        val name: String,
+        val effects: List<MobEffectInstance>,
+        val color: Int,
+        val type: PotionType
+    ) : PotionRef() {
         override fun getStack(): ItemStack {
             val contents = PotionContents(
                 Optional.of(Potions.WATER),
                 Optional.of(color),
                 effects
             )
-            val stack = ItemStack(Items.POTION, 1)
+            val stack = ItemStack(
+                when (type) {
+                    PotionType.NORMAL -> Items.POTION
+                    PotionType.SPLASH -> Items.SPLASH_POTION
+                    PotionType.LINGERING -> Items.LINGERING_POTION
+                }, 1
+            )
             stack.set(DataComponents.POTION_CONTENTS, contents)
             stack.set(DataComponents.ITEM_NAME, Component.translatable(name))
             return stack
@@ -46,7 +61,12 @@ sealed class PotionRef {
         fun of(potion: Holder<Potion>): PotionRef =
             GamePotion(potion)
 
-        fun of(name: String, effects: List<MobEffectInstance>, color: Int): PotionRef =
-            CustomPotion(name, effects, color)
+        fun of(
+            name: String,
+            effects: List<MobEffectInstance>,
+            color: Int,
+            type: PotionType = PotionType.NORMAL
+        ): PotionRef =
+            CustomPotion(name, effects, color, type)
     }
 }

@@ -18,9 +18,8 @@ import net.minecraft.world.level.block.SoulFireBlock
 enum class FireType : Comparable<FireType> {
     NONE, NORMAL, SOUL, BLAZE;
 
-
     companion object {
-        val BLAZE_BURNER = ResourceLocation.fromNamespaceAndPath("create", "blaze_burner")
+        val BLAZE_BURNER: ResourceLocation = ResourceLocation.fromNamespaceAndPath("create", "blaze_burner")
 
         fun getFromBlock(level: Level, blockPos: BlockPos): FireType {
             val state = level.getBlockState(blockPos)
@@ -62,6 +61,16 @@ object Recipes {
                     MobEffectInstance(MobEffects.WITHER, 800)
                 ),
                 FastColor.ARGB32.opaque(0x736156)
+            )
+        ),
+        setOf(Items.WITHER_ROSE, Items.GUNPOWDER) to Pair(
+            FireType.SOUL, PotionRef.of(
+                "potion.immersivemagic.splash_decay_potion",
+                listOf(
+                    MobEffectInstance(MobEffects.WITHER, 800)
+                ),
+                FastColor.ARGB32.opaque(0x736156),
+                PotionType.SPLASH
             )
         ),
     )
