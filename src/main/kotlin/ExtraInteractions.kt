@@ -110,27 +110,20 @@ object ExtraInteractions {
             val item = stack.item
 
             val potionStack: ItemStack?
-            val lowerState = level.getBlockState(pos.below())
 
-            if (lowerState.`is`(Blocks.FIRE) || lowerState.`is`(Blocks.SOUL_FIRE) || lowerState.`is`(Blocks.CAMPFIRE)
-                || lowerState.`is`(Blocks.SOUL_CAMPFIRE)
-            ) {
-                val entity = level.getBlockEntity(pos) as WaterCauldronBlockEntity
+            val entity = level.getBlockEntity(pos) as WaterCauldronBlockEntity
 
-                val storedItems = entity.items.map { stack -> stack.item }.toSet()
+            val storedItems = entity.items.map { stack -> stack.item }.toSet()
 
-                if (storedItems.isEmpty()) {
-                    potionStack = PotionContents.createItemStack(Items.POTION, Potions.WATER)
-                } else {
-                    val fireType = FireType.Companion.getFromBlock(level, pos.below())
-
-                    val potion = Recipes.tryGetPotion(storedItems, fireType)
-
-                    potionStack =
-                        potion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
-                }
-            } else {
+            if (storedItems.isEmpty()) {
                 potionStack = PotionContents.createItemStack(Items.POTION, Potions.WATER)
+            } else {
+                val fireType = FireType.Companion.getFromBlock(level, pos.below())
+
+                val potion = Recipes.tryGetPotion(storedItems, fireType)
+
+                potionStack =
+                    potion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
             }
 
             player.inventory.add(potionStack)
