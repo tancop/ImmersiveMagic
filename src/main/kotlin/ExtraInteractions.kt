@@ -1,21 +1,15 @@
 package dev.tancop.immersivemagic
 
-import dev.tancop.immersivemagic.FireType.Companion.getFromBlock
 import dev.tancop.immersivemagic.Recipes.acceptedItems
 import net.minecraft.core.BlockPos
 import net.minecraft.core.cauldron.CauldronInteraction
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.particles.ColorParticleOption
-import net.minecraft.core.particles.ParticleTypes
-import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.stats.Stats
-import net.minecraft.util.FastColor
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.ItemInteractionResult
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemUtils
 import net.minecraft.world.item.Items
@@ -26,7 +20,6 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.LayeredCauldronBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
-import java.util.stream.Collectors
 
 object ExtraInteractions {
     fun fallbackInteract(
@@ -37,7 +30,7 @@ object ExtraInteractions {
                 // Item might still be part of a recipe
                 val insertedItem = stack.item
 
-                val entity = level.getBlockEntity(pos) as? WaterCauldronBlockEntity
+                val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
                 if (entity != null) {
                     if (acceptedItems.contains(insertedItem)) {
                         // Insert if the cauldron already has that ingredient
@@ -45,31 +38,7 @@ object ExtraInteractions {
                             entity.items.add(stack)
                             stack.shrink(1)
 
-                            val storedItems = entity.items.stream().map<Item?> { obj -> obj.item }
-                                .collect(Collectors.toSet())
-                            val fireType = getFromBlock(level, pos.below())
-                            val potion = Recipes.tryGetPotion(storedItems, fireType)
-
-                            var color = FastColor.ARGB32.color(255, 255, 255, 255)
-
-                            if (potion != null) {
-                                color = potion.getEffectColor()
-                            }
-
-                            // Spawn effect particles with the potion's color
-                            // White when there's no valid potion with that recipe
-                            val particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color)
-                            (level as ServerLevel).sendParticles(
-                                particle,
-                                pos.x + 0.5,
-                                pos.y + 1.0,
-                                pos.z + 0.5,
-                                20,
-                                0.0,
-                                0.2,
-                                0.0,
-                                0.5
-                            )
+                            entity.spawnParticles(level, pos, 20)
                         }
                     }
                 }
@@ -92,7 +61,7 @@ object ExtraInteractions {
             player.awardStat(Stats.FILL_CAULDRON)
             player.awardStat(Stats.ITEM_USED.get(item))
 
-            val entity = level.getBlockEntity(pos) as? WaterCauldronBlockEntity
+            val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
             entity?.items?.clear()
 
             level.setBlockAndUpdate(pos, newState)
@@ -111,7 +80,7 @@ object ExtraInteractions {
 
             val potionStack: ItemStack?
 
-            val entity = level.getBlockEntity(pos) as WaterCauldronBlockEntity
+            val entity = level.getBlockEntity(pos) as LayeredCauldronBlockEntity
 
             val storedItems = entity.items.map { stack -> stack.item }.toSet()
 
@@ -157,7 +126,7 @@ object ExtraInteractions {
                     player.awardStat(Stats.ITEM_USED.get(stack.item))
 
                     // Adding water dilutes any stored potion
-                    val entity = level.getBlockEntity(pos) as? WaterCauldronBlockEntity
+                    val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
                     entity?.items?.clear()
 
                     level.setBlockAndUpdate(pos, state.cycle(LayeredCauldronBlock.LEVEL))

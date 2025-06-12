@@ -35,7 +35,7 @@ class ImmersiveMagic
         val BLOCK_ENTITY_TYPES: DeferredRegister<BlockEntityType<*>> =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID)
 
-        val WATER_CAULDRON_BLOCK_ENTITY: DeferredHolder<BlockEntityType<*>, BlockEntityType<WaterCauldronBlockEntity>> =
+        val WATER_CAULDRON_BLOCK_ENTITY: DeferredHolder<BlockEntityType<*>, BlockEntityType<LayeredCauldronBlockEntity>> =
             BLOCK_ENTITY_TYPES.register(
                 "water_cauldron",
                 Supplier {
@@ -43,7 +43,7 @@ class ImmersiveMagic
                     // Building with null works just fine
 
                     BlockEntityType.Builder.of(
-                        { pos, state -> WaterCauldronBlockEntity(pos, state) },
+                        { pos, state -> LayeredCauldronBlockEntity(pos, state) },
                         Blocks.WATER_CAULDRON
                     ).build(null)
                 })
