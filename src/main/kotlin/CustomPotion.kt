@@ -1,7 +1,12 @@
 package dev.tancop.immersivemagic
 
+import com.mojang.datafixers.util.Either
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.Holder
 import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.item.ItemStack
@@ -10,6 +15,7 @@ import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.alchemy.Potions
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 enum class PotionType {
     NORMAL, SPLASH, LINGERING
@@ -25,6 +31,14 @@ sealed class PotionRef {
         }
 
         override fun getEffectColor(): Int = PotionContents.getColor(potion)
+
+        companion object {
+            val CODEC = RecordCodecBuilder.create { instance ->
+                instance.group(
+                    BuiltInRegistries.POTION.holderByNameCodec().fieldOf("potion").forGetter(GamePotion::potion),
+                ).apply(instance) { potion -> GamePotion(potion) }
+            }
+        }
     }
 
     data class CustomPotion(
@@ -52,6 +66,24 @@ sealed class PotionRef {
         }
 
         override fun getEffectColor(): Int = color
+
+        companion object {
+            val CODEC = RecordCodecBuilder.create { instance ->
+                instance.group(
+                    Codec.STRING.fieldOf("name").forGetter(CustomPotion::name),
+                    MobEffectInstance.CODEC.listOf().fieldOf("name").forGetter(CustomPotion::effects),
+                    Codec.INT.fieldOf("color").forGetter(CustomPotion::color),
+                    Codec.STRING.fieldOf("type").forGetter { it.type.name },
+                ).apply(instance) { name, effects, color, type ->
+                    CustomPotion(
+                        name,
+                        effects,
+                        color,
+                        PotionType.valueOf(type)
+                    )
+                }
+            }
+        }
     }
 
     data class CustomItem(
@@ -63,6 +95,15 @@ sealed class PotionRef {
         }
 
         override fun getEffectColor(): Int = color
+
+        companion object {
+            val CODEC = RecordCodecBuilder.create { instance ->
+                instance.group(
+                    ItemStack.CODEC.fieldOf("item").forGetter(CustomItem::item),
+                    Codec.INT.fieldOf("color").forGetter(CustomItem::color),
+                ).apply(instance) { item, color -> CustomItem(item, color) }
+            }
+        }
     }
 
     abstract fun getStack(): ItemStack
@@ -82,5 +123,32 @@ sealed class PotionRef {
 
         fun of(item: ItemStack, color: Int): PotionRef =
             CustomItem(item, color)
+
+        val CODEC = Codec.xor(GamePotion.CODEC, Codec.xor(CustomPotion.CODEC, CustomItem.CODEC)).xmap({ either ->
+            val left = either.left().getOrNull()
+            if (left != null) {
+                return@xmap DataResult.success(left)
+            }
+            val right = either.right().getOrNull()
+            if (right != null) {
+                val innerLeft = right.left().getOrNull()
+                if (innerLeft != null) {
+                    return@xmap DataResult.success(innerLeft)
+                }
+                val innerRight = right.right().getOrNull()
+                if (innerRight != null) {
+                    return@xmap DataResult.success(innerRight)
+                }
+            }
+            DataResult.error { "Failed to deserialize PotionRef" }
+        }, { res ->
+            res.mapOrElse({
+                when (it) {
+                    is GamePotion -> Either.left(it)
+                    is CustomPotion -> Either.right(Either.left(it))
+                    is CustomItem -> Either.right(Either.right(it))
+                }
+            }, { null })
+        })
     }
 }
