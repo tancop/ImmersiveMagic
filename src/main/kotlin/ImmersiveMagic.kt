@@ -8,6 +8,9 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.common.util.TriState
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
 import org.slf4j.Logger
@@ -21,6 +24,17 @@ class ImmersiveMagic
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     init {
         BLOCK_ENTITY_TYPES.register(modEventBus)
+
+        fun onRightClick(event: PlayerInteractEvent.RightClickBlock) {
+            if (event.level.isClientSide) return
+
+            val state = event.level.getBlockState(event.pos)
+            if (state.`is`(Blocks.WATER_CAULDRON) && event.entity.isCrouching) {
+                event.useBlock = TriState.TRUE
+            }
+        }
+
+        NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClick(it) }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
     }

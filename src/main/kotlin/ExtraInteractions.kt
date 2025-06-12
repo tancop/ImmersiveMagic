@@ -27,18 +27,24 @@ object ExtraInteractions {
     ): ItemInteractionResult {
         if (state.block is LayeredCauldronBlock) {
             if (!level.isClientSide) {
-                // Item might still be part of a recipe
-                val insertedItem = stack.item
+                if (player.isShiftKeyDown && hand == InteractionHand.MAIN_HAND) {
+                    stack.shrink(1)
+                    player.inventory.add(ItemStack(Items.DIRT, 1))
+                    println("dipping item")
+                } else {
+                    // Item might still be part of a recipe
+                    val insertedItem = stack.item
 
-                val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
-                if (entity != null) {
-                    if (acceptedItems.contains(insertedItem)) {
-                        // Insert if the cauldron already has that ingredient
-                        if (entity.items.none { stack -> stack.item == insertedItem }) {
-                            entity.items.add(stack)
-                            stack.shrink(1)
+                    val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
+                    if (entity != null) {
+                        if (acceptedItems.contains(insertedItem)) {
+                            // Insert if the cauldron already has that ingredient
+                            if (entity.items.none { stack -> stack.item == insertedItem }) {
+                                entity.items.add(stack)
+                                stack.shrink(1)
 
-                            entity.spawnParticles(level, pos, 20)
+                                entity.spawnParticles(level, pos, 20)
+                            }
                         }
                     }
                 }
