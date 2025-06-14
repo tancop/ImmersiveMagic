@@ -2,11 +2,8 @@ package dev.tancop.immersivemagic
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import io.netty.buffer.ByteBuf
 import net.minecraft.core.Holder
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.codec.ByteBufCodecs
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectInstance
@@ -39,22 +36,5 @@ class PotionEffect(
                 )
             }
         }
-
-        val STREAM_CODEC: StreamCodec<ByteBuf, PotionEffect> = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC, { it.effect.key!!.location() },
-            ByteBufCodecs.INT, { it.duration },
-            ByteBufCodecs.INT, { it.amplifier },
-            ByteBufCodecs.BOOL, { it.ambient },
-            ByteBufCodecs.BOOL, { it.visible },
-            ByteBufCodecs.BOOL, { it.showIcon },
-            { effect, duration, amplifier, ambient, visible, showIcon ->
-                PotionEffect(
-                    BuiltInRegistries.MOB_EFFECT.wrapAsHolder(
-                        BuiltInRegistries.MOB_EFFECT.get(effect)!!
-                    ),
-                    duration, amplifier, ambient, visible, showIcon
-                )
-            }
-        )
     }
 }

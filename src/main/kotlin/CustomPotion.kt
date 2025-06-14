@@ -4,14 +4,10 @@ import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import io.netty.buffer.ByteBuf
 import net.minecraft.core.Holder
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.chat.Component
-import net.minecraft.network.codec.ByteBufCodecs
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -48,11 +44,6 @@ sealed class PotionRef {
                     )
                 }
             }
-
-            val STREAM_CODEC: StreamCodec<ByteBuf, GamePotion> = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC, { it.potion.key!!.location() },
-                { GamePotion(BuiltInRegistries.POTION.wrapAsHolder(BuiltInRegistries.POTION.get(it)!!)) }
-            )
         }
     }
 
@@ -93,16 +84,6 @@ sealed class PotionRef {
                     CustomPotion(name, effects, color, PotionType.valueOf(type))
                 }
             }
-
-            val STREAM_CODEC: StreamCodec<ByteBuf, CustomPotion> = StreamCodec.composite(
-                ByteBufCodecs.STRING_UTF8, { it.name },
-                ByteBufCodecs.collection({ mutableListOf() }, PotionEffect.STREAM_CODEC), { it.effects },
-                ByteBufCodecs.INT, { it.color },
-                ByteBufCodecs.STRING_UTF8, { it.type.name },
-                { name, effects, color, type ->
-                    CustomPotion(name, effects, color, PotionType.valueOf(type))
-                }
-            )
         }
     }
 
@@ -123,14 +104,6 @@ sealed class PotionRef {
                     Codec.INT.fieldOf("color").forGetter(CustomItem::color),
                 ).apply(instance) { item, color -> CustomItem(item, color) }
             }
-
-            val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, CustomItem> = StreamCodec.composite(
-                ItemStack.STREAM_CODEC, { it.item },
-                ByteBufCodecs.INT, { it.color },
-                { item, color ->
-                    CustomItem(item, color)
-                }
-            )
         }
     }
 
@@ -179,33 +152,5 @@ sealed class PotionRef {
                     }
                 }, { null })
             })
-
-        val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, PotionRef> = ByteBufCodecs.either(
-            GamePotion.STREAM_CODEC,
-            ByteBufCodecs.either(CustomPotion.STREAM_CODEC, CustomItem.STREAM_CODEC)
-        ).map({ either ->
-            val left = either.left().getOrNull()
-            if (left != null) {
-                return@map left
-            }
-            val right = either.right().getOrNull()
-            if (right != null) {
-                val innerLeft = right.left().getOrNull()
-                if (innerLeft != null) {
-                    return@map innerLeft
-                }
-                val innerRight = right.right().getOrNull()
-                if (innerRight != null) {
-                    return@map innerRight
-                }
-            }
-            throw IllegalArgumentException("Failed to deserialize PotionRef")
-        }, { res ->
-            when (res) {
-                is GamePotion -> Either.left(res)
-                is CustomPotion -> Either.right(Either.left(res))
-                is CustomItem -> Either.right(Either.right(res))
-            }
-        })
     }
 }
