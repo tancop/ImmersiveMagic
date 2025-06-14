@@ -1,0 +1,24 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "NORMAL",
+  "ingredients": [
+    {
+      "item": "minecraft:spider_eye"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:arrow"
+  },
+  "result": {
+    "color": -7888029,
+    "item": {
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:poison"
+        }
+      },
+      "count": 1,
+      "id": "minecraft:tipped_arrow"
+    }
+  }
+}

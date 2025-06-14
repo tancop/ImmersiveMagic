@@ -29,21 +29,27 @@ object ExtraInteractions {
     ): ItemInteractionResult {
         if (state.block is LayeredCauldronBlock) {
             if (!level.isClientSide) {
+                val entity = level.getBlockEntity(pos) as LayeredCauldronBlockEntity
                 if (player.isShiftKeyDown && hand == InteractionHand.MAIN_HAND) {
-                    stack.shrink(1)
-                    player.inventory.add(ItemStack(Items.DIRT, 1))
-                    println("dipping item")
+                    // Look for dipping recipes
+                    val recipes = level.recipeManager
+
+                    val input = BrewingRecipeInput(entity, stack)
+                    val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
+
+                    if (recipe != null) {
+                        stack.shrink(1)
+                        player.inventory.add(recipe.value.result.getStack())
+                        LayeredCauldronBlock.lowerFillLevel(state, level, pos)
+                    }
                 } else {
                     // Item might still be part of a recipe
 
-                    val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
-                    if (entity != null) {
-                        if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
-                            entity.items.add(stack)
-                            stack.shrink(1)
+                    if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
+                        entity.items.add(stack)
+                        stack.shrink(1)
 
-                            entity.spawnParticles(level, pos, 20)
-                        }
+                        entity.spawnParticles(level, pos, 20)
                     }
                 }
             }

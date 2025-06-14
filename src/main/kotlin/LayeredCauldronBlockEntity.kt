@@ -32,9 +32,8 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
         val listTag = ListTag()
 
         for (i in 0..<items.size) {
-            val item = items[i]
             listTag.add(
-                ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, item).result().get()
+                ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, items[i]).result().get()
             )
         }
 
@@ -66,7 +65,7 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         val recipes = level.recipeManager
 
-        val input = BrewingRecipeInput(this, ItemStack.EMPTY)
+        val input = BrewingRecipeInput(this, ItemStack.EMPTY, true)
         val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
 
         var color = FastColor.ARGB32.color(255, 255, 255, 255)
@@ -90,6 +89,7 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
     }
 
     companion object {
+        @Suppress("unused") // `state` is never actually used but it's part of the block entity interface
         fun tick(level: Level, pos: BlockPos, state: BlockState, instance: BlockEntity) {
             (instance as? LayeredCauldronBlockEntity)?.let {
                 if (instance.ticksToNextSpray == 0) {

@@ -10,10 +10,18 @@ import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeOutput
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.crafting.Ingredient
 
 
-class BrewingRecipeBuilder(val ingredients: List<Ingredient>, val fireType: FireType, val result: PotionRef) :
+class BrewingRecipeBuilder(
+    val ingredients: List<Ingredient>,
+    val fireType: FireType,
+    val result: PotionRef,
+    val potionReceiver: Ingredient = Ingredient.of(
+        Items.GLASS_BOTTLE
+    )
+) :
     RecipeBuilder {
     val criteria: MutableMap<String, Criterion<*>> = LinkedHashMap()
 
@@ -38,7 +46,7 @@ class BrewingRecipeBuilder(val ingredients: List<Ingredient>, val fireType: Fire
 
         this.criteria.forEach { (key, criterion) -> advancement.addCriterion(key, criterion) }
 
-        val recipe = BrewingRecipe(ingredients, fireType, result)
+        val recipe = BrewingRecipe(ingredients, fireType, result, potionReceiver)
         output.accept(id, recipe, advancement.build(id.withPrefix("brew_")))
     }
 }

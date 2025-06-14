@@ -6,18 +6,28 @@ import dev.tancop.immersivemagic.MaybeSerializable
 import dev.tancop.immersivemagic.PotionRef
 import net.minecraft.core.HolderLookup
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 
-class BrewingRecipe(val ingredients: List<Ingredient>, val fireType: FireType, val result: PotionRef) :
+class BrewingRecipe(
+    val ingredients: List<Ingredient>,
+    val fireType: FireType,
+    val result: PotionRef,
+    val potionReceiver: Ingredient = Ingredient.of(
+        Items.GLASS_BOTTLE
+    )
+) :
     Recipe<BrewingRecipeInput>, MaybeSerializable {
     override fun matches(
         input: BrewingRecipeInput,
         level: Level
     ): Boolean {
+        if (!input.ignoreReceiver && !potionReceiver.test(input.potionReceiver)) return false
+
         val worldFireType = FireType.Companion.getFromBlock(level, input.entity.blockPos.below())
         if (worldFireType < fireType) return false
 

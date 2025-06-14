@@ -3,16 +3,13 @@
   "fireType": "NORMAL",
   "ingredients": [
     {
-      "item": "minecraft:sugar"
-    },
-    {
-      "item": "minecraft:light_blue_dye"
+      "item": "minecraft:spider_eye"
     }
   ],
   "receiver": {
     "item": "minecraft:glass_bottle"
   },
   "result": {
-    "potion": "minecraft:swiftness"
+    "potion": "minecraft:poison"
   }
 }

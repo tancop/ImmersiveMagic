@@ -4,10 +4,15 @@ import dev.tancop.immersivemagic.LayeredCauldronBlockEntity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.RecipeInput
 
-class BrewingRecipeInput(val entity: LayeredCauldronBlockEntity, val stack: ItemStack) : RecipeInput {
+class BrewingRecipeInput(
+    val entity: LayeredCauldronBlockEntity,
+    val potionReceiver: ItemStack,
+    val ignoreReceiver: Boolean = false
+) :
+    RecipeInput {
     override fun getItem(index: Int): ItemStack {
         if (index == entity.items.size) {
-            return stack
+            return potionReceiver.copy()
         }
 
         return entity.items.elementAt(index)

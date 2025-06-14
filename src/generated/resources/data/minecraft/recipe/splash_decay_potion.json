@@ -1,6 +1,6 @@
 {
   "type": "immersivemagic:brewing",
-  "fireType": "NORMAL",
+  "fireType": "SOUL",
   "ingredients": [
     {
       "item": "minecraft:wither_rose"
@@ -9,6 +9,9 @@
       "item": "minecraft:gunpowder"
     }
   ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
   "result": {
     "type": "SPLASH",
     "color": -9215658,
