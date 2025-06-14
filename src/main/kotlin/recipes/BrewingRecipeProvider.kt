@@ -19,7 +19,7 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
 
     override fun buildRecipes(output: RecipeOutput) {
         BrewingRecipeBuilder(
-            listOf(Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)),
+            listOf(Ingredient.of(Items.WITHER_ROSE)),
             FireType.NORMAL,
             PotionRef.Companion.of(
                 "potion.immersivemagic.decay_potion",
@@ -29,6 +29,19 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
                 FastColor.ARGB32.opaque(0x736156)
             )
         ).save(output, "decay_potion")
+
+        BrewingRecipeBuilder(
+            listOf(Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)),
+            FireType.NORMAL,
+            PotionRef.Companion.of(
+                "potion.immersivemagic.splash_decay_potion",
+                listOf(
+                    PotionEffect(MobEffects.WITHER, 800)
+                ),
+                FastColor.ARGB32.opaque(0x736156),
+                type = PotionRef.PotionType.SPLASH
+            )
+        ).save(output, "splash_decay_potion")
 
         BrewingRecipeBuilder(
             listOf(Ingredient.of(Items.SUGAR), Ingredient.of(Items.LIGHT_BLUE_DYE)),

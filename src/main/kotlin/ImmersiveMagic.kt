@@ -26,8 +26,7 @@ import java.util.function.Supplier
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ImmersiveMagic.Companion.MOD_ID)
-class ImmersiveMagic
-    (modEventBus: IEventBus, modContainer: ModContainer) {
+class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
     // The constructor for the mod class is the first code run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     init {

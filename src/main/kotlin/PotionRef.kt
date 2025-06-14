@@ -17,10 +17,6 @@ import net.minecraft.world.item.alchemy.Potions
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-enum class PotionType {
-    NORMAL, SPLASH, LINGERING
-}
-
 sealed class PotionRef {
     data class GamePotion(val potion: Holder<Potion>) : PotionRef() {
         override fun getStack(): ItemStack {
@@ -45,6 +41,10 @@ sealed class PotionRef {
                 }
             }
         }
+    }
+
+    enum class PotionType {
+        NORMAL, SPLASH, LINGERING
     }
 
     data class CustomPotion(

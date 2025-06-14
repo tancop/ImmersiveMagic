@@ -1,5 +1,7 @@
-// 1.21.1	2025-06-14T09:20:14.727148101	Recipes
+// 1.21.1	2025-06-14T13:01:43.579166919	Recipes
 e8797339530df79a511194be014a72533fea919e data/minecraft/advancement/brew_decay_potion.json
 db87513abe2b4c92c35193bc9af7f25c16ff0849 data/minecraft/advancement/brew_meth.json
-3f1d178e595b89f8505b9af7380de2b6a2eb62ff data/minecraft/recipe/decay_potion.json
+fff64eab428570b57d88ce56e557ad10de9f239c data/minecraft/advancement/brew_splash_decay_potion.json
+cc944adbe8cc9096c10601209c1d76904daed12d data/minecraft/recipe/decay_potion.json
 2e3516415e91d7edd9ddb5faaf08de7e0471f4af data/minecraft/recipe/meth.json
+67576484de3dda6257170b83d5451bd828d0e892 data/minecraft/recipe/splash_decay_potion.json

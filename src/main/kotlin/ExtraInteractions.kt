@@ -1,6 +1,7 @@
 package dev.tancop.immersivemagic
 
-import dev.tancop.immersivemagic.Recipes.acceptedItems
+import dev.tancop.immersivemagic.recipes.BrewingRecipe
+import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
 import net.minecraft.core.BlockPos
 import net.minecraft.core.cauldron.CauldronInteraction
 import net.minecraft.core.component.DataComponents
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.LayeredCauldronBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
+import kotlin.jvm.optionals.getOrNull
 
 object ExtraInteractions {
     fun fallbackInteract(
@@ -33,18 +35,14 @@ object ExtraInteractions {
                     println("dipping item")
                 } else {
                     // Item might still be part of a recipe
-                    val insertedItem = stack.item
 
                     val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
                     if (entity != null) {
-                        if (acceptedItems.contains(insertedItem)) {
-                            // Insert if the cauldron already has that ingredient
-                            if (entity.items.none { stack -> stack.item == insertedItem }) {
-                                entity.items.add(stack)
-                                stack.shrink(1)
+                        if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
+                            entity.items.add(stack)
+                            stack.shrink(1)
 
-                                entity.spawnParticles(level, pos, 20)
-                            }
+                            entity.spawnParticles(level, pos, 20)
                         }
                     }
                 }
@@ -88,17 +86,19 @@ object ExtraInteractions {
 
             val entity = level.getBlockEntity(pos) as LayeredCauldronBlockEntity
 
-            val storedItems = entity.items.map { stack -> stack.item }.toSet()
-
-            if (storedItems.isEmpty()) {
+            if (entity.items.isEmpty()) {
                 potionStack = PotionContents.createItemStack(Items.POTION, Potions.WATER)
             } else {
-                val fireType = FireType.Companion.getFromBlock(level, pos.below())
+                val recipes = level.recipeManager
 
-                val potion = Recipes.tryGetPotion(storedItems, fireType)
+                val input = BrewingRecipeInput(entity, stack)
+                val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
 
-                potionStack =
-                    potion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
+                potionStack = if (recipe != null) {
+                    recipe.value.result.getStack()
+                } else {
+                    PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
+                }
             }
 
             player.inventory.add(potionStack)

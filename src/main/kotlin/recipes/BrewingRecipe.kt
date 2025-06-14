@@ -1,6 +1,9 @@
 package dev.tancop.immersivemagic.recipes
 
-import dev.tancop.immersivemagic.*
+import dev.tancop.immersivemagic.FireType
+import dev.tancop.immersivemagic.ImmersiveMagic
+import dev.tancop.immersivemagic.MaybeSerializable
+import dev.tancop.immersivemagic.PotionRef
 import net.minecraft.core.HolderLookup
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.Ingredient
@@ -18,10 +21,24 @@ class BrewingRecipe(val ingredients: List<Ingredient>, val fireType: FireType, v
         val worldFireType = FireType.Companion.getFromBlock(level, input.entity.blockPos.below())
         if (worldFireType < fireType) return false
 
-        val inputCounts = input.entity.items.groupingBy { it }.eachCount()
-        val recipeCounts = ingredients.groupingBy { it }.eachCount()
+        val usedItems = mutableListOf<ItemStack>()
 
-        return inputCounts == recipeCounts
+        for (ingredient in ingredients) {
+            var found = false
+            for (stack in input.entity.items) {
+                if (usedItems.contains(stack)) {
+                    continue
+                }
+                if (ingredient.test(stack)) {
+                    found = true
+                    usedItems.add(stack)
+                    break
+                }
+            }
+            if (!found) return false
+        }
+
+        return true
     }
 
     override fun assemble(input: BrewingRecipeInput, registries: HolderLookup.Provider): ItemStack = result.getStack()
@@ -40,4 +57,22 @@ class BrewingRecipe(val ingredients: List<Ingredient>, val fireType: FireType, v
 
     // This is a server-side mod, syncing recipes to the client can disconnect it
     override fun immersiveMagic_isSerializable(): Boolean = false
+
+    companion object {
+        private var cachedItems: Set<Ingredient>? = null
+
+        fun getAcceptedIngredients(level: Level): Set<Ingredient> {
+            cachedItems?.let { return it }
+
+            val recipes = level.recipeManager.getAllRecipesFor(ImmersiveMagic.BREWING.get())
+
+            val items = mutableSetOf<Ingredient>()
+            for (recipe in recipes) {
+                items.addAll(recipe.value.ingredients)
+            }
+
+            cachedItems = items
+            return items
+        }
+    }
 }

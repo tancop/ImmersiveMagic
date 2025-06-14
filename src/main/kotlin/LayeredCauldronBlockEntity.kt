@@ -1,6 +1,7 @@
 package dev.tancop.immersivemagic
 
 import dev.tancop.immersivemagic.ImmersiveMagic.Companion.WATER_CAULDRON_BLOCK_ENTITY
+import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.particles.ColorParticleOption
@@ -15,23 +16,23 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import kotlin.jvm.optionals.getOrNull
 import kotlin.random.Random
 
 // Stores potion ingredients added to a cauldron
 class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
     BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state), MaybeSerializable {
 
-    var items: MutableSet<ItemStack> = mutableSetOf()
+    var items: MutableList<ItemStack> = mutableListOf()
     var ticksToNextSpray = 0
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
 
-        val itemList = items.toList()
         val listTag = ListTag()
 
-        for (i in 0..<itemList.size) {
-            val item = itemList[i]
+        for (i in 0..<items.size) {
+            val item = items[i]
             listTag.add(
                 ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, item).result().get()
             )
@@ -63,14 +64,15 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
         // No ingredients stored
         if (items.isEmpty()) return
 
-        val storedItems = items.map { obj -> obj.item }.toSet()
-        val fireType = FireType.getFromBlock(level, pos.below())
-        val potion = Recipes.tryGetPotion(storedItems, fireType)
+        val recipes = level.recipeManager
+
+        val input = BrewingRecipeInput(this, ItemStack.EMPTY)
+        val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
 
         var color = FastColor.ARGB32.color(255, 255, 255, 255)
 
-        if (potion != null) {
-            color = potion.getEffectColor()
+        if (recipe != null) {
+            color = recipe.value.result.getEffectColor()
         }
 
         val particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color)
