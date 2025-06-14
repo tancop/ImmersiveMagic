@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FastColor
-import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -58,7 +57,7 @@ object Recipes {
             FireType.SOUL, PotionRef.of(
                 "potion.immersivemagic.splash_decay_potion",
                 listOf(
-                    MobEffectInstance(MobEffects.WITHER, 800)
+                    PotionEffect(MobEffects.WITHER, 800)
                 ),
                 FastColor.ARGB32.opaque(0x736156),
                 PotionType.SPLASH
@@ -68,7 +67,7 @@ object Recipes {
             FireType.SOUL, PotionRef.of(
                 "potion.immersivemagic.decay_potion",
                 listOf(
-                    MobEffectInstance(MobEffects.WITHER, 800)
+                    PotionEffect(MobEffects.WITHER, 800)
                 ),
                 FastColor.ARGB32.opaque(0x736156)
             )
@@ -80,6 +79,7 @@ object Recipes {
             )
         ),
         setOf(Items.MAGMA_CREAM) to Pair(FireType.NORMAL, PotionRef.of(Potions.FIRE_RESISTANCE)),
+        setOf(Items.WIND_CHARGE) to Pair(FireType.NORMAL, PotionRef.of(Potions.WIND_CHARGED)),
     )
 
     val acceptedItems = recipes.keys.reduce { acc, set -> acc union set }

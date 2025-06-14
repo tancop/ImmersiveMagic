@@ -1,0 +1,27 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "NORMAL",
+  "ingredients": [
+    {
+      "item": "minecraft:wither_rose"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "result": {
+    "type": "NORMAL",
+    "color": -9215658,
+    "effects": [
+      {
+        "ambient": false,
+        "amplifier": 0,
+        "duration": 800,
+        "effect": "minecraft:wither",
+        "showIcon": true,
+        "visible": true
+      }
+    ],
+    "name": "potion.immersivemagic.decay_potion"
+  }
+}

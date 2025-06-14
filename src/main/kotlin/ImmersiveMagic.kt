@@ -1,7 +1,13 @@
 package dev.tancop.immersivemagic
 
 import com.mojang.logging.LogUtils
+import dev.tancop.immersivemagic.recipes.BrewingRecipe
+import dev.tancop.immersivemagic.recipes.BrewingRecipeProvider
+import dev.tancop.immersivemagic.recipes.BrewingRecipeSerializer
 import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.crafting.RecipeSerializer
+import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
@@ -10,11 +16,13 @@ import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.util.TriState
+import net.neoforged.neoforge.data.event.GatherDataEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
 import org.slf4j.Logger
 import java.util.function.Supplier
+
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ImmersiveMagic.Companion.MOD_ID)
@@ -24,6 +32,8 @@ class ImmersiveMagic
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     init {
         BLOCK_ENTITY_TYPES.register(modEventBus)
+        RECIPE_TYPES.register(modEventBus)
+        RECIPE_SERIALIZERS.register(modEventBus)
 
         fun onRightClick(event: PlayerInteractEvent.RightClickBlock) {
             if (event.level.isClientSide) return
@@ -35,6 +45,7 @@ class ImmersiveMagic
         }
 
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClick(it) }
+        modEventBus.addListener<GatherDataEvent> { gatherData(it) }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
     }
@@ -61,5 +72,32 @@ class ImmersiveMagic
                         Blocks.WATER_CAULDRON
                     ).build(null)
                 })
+
+        val RECIPE_TYPES: DeferredRegister<RecipeType<*>> = DeferredRegister.create(Registries.RECIPE_TYPE, MOD_ID)
+
+        val BREWING: DeferredHolder<RecipeType<*>, RecipeType<BrewingRecipe>> = RECIPE_TYPES.register(
+            "brewing",
+            Supplier {
+                RecipeType.simple<BrewingRecipe>(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "brewing")
+                )
+            })
+
+        val RECIPE_SERIALIZERS: DeferredRegister<RecipeSerializer<*>> =
+            DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID)
+
+        val BREWING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, BrewingRecipeSerializer> =
+            RECIPE_SERIALIZERS.register("brewing", Supplier { BrewingRecipeSerializer() })
+
+        fun gatherData(event: GatherDataEvent) {
+            val generator = event.generator
+            val output = generator.packOutput
+            val lookupProvider = event.lookupProvider
+
+            generator.addProvider(
+                event.includeServer(),
+                BrewingRecipeProvider(output, lookupProvider)
+            )
+        }
     }
 }

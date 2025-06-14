@@ -8,6 +8,7 @@
     "AbstractCauldronBlockMixin",
     "BlockEntityMixin",
     "ClientboundLevelChunkPacketDataMixin",
+    "ClientboundUpdateRecipesPacketMixin",
     "LayeredCauldronBlockMixin"
   ],
   "injectors": {

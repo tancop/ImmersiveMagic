@@ -1,6 +1,6 @@
 package dev.tancop.immersivemagic.mixin;
 
-import dev.tancop.immersivemagic.BlockEntityExt;
+import dev.tancop.immersivemagic.MaybeSerializable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 // Skips serializing block entities with `immersiveMagic_isSerializable` returning false
 @Mixin(ClientboundLevelChunkPacketData.class)
-public class ClientboundLevelChunkPacketDataMixin {
+public abstract class ClientboundLevelChunkPacketDataMixin {
     @Shadow
     @Final
     private List<Object> blockEntitiesData;
@@ -35,7 +35,7 @@ public class ClientboundLevelChunkPacketDataMixin {
         create.setAccessible(true);
 
         for (Map.Entry<BlockPos, BlockEntity> entry : levelChunk.getBlockEntities().entrySet()) {
-            if (((BlockEntityExt) entry.getValue()).immersiveMagic_isSerializable()) {
+            if (((MaybeSerializable) entry.getValue()).immersiveMagic_isSerializable()) {
                 Object blockEntityInfo = create.invoke(null, entry.getValue());
 
                 this.blockEntitiesData.add(blockEntityInfo);

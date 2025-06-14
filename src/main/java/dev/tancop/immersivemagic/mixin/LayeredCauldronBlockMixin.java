@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(LayeredCauldronBlock.class)
 @Implements(@Interface(iface = EntityBlock.class, prefix = "entityBlock$"))
-public class LayeredCauldronBlockMixin {
+public abstract class LayeredCauldronBlockMixin {
     public BlockEntity entityBlock$newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new LayeredCauldronBlockEntity(pos, state);
     }

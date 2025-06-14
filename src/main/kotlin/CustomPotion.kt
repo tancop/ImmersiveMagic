@@ -4,11 +4,15 @@ import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import io.netty.buffer.ByteBuf
 import net.minecraft.core.Holder
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.chat.Component
-import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potion
@@ -33,17 +37,28 @@ sealed class PotionRef {
         override fun getEffectColor(): Int = PotionContents.getColor(potion)
 
         companion object {
-            val CODEC = RecordCodecBuilder.create { instance ->
+            val CODEC: Codec<GamePotion> = RecordCodecBuilder.create { instance ->
                 instance.group(
-                    BuiltInRegistries.POTION.holderByNameCodec().fieldOf("potion").forGetter(GamePotion::potion),
-                ).apply(instance) { potion -> GamePotion(potion) }
+                    ResourceLocation.CODEC.fieldOf("potion").forGetter { it.potion.key!!.location() },
+                ).apply(instance) { potion ->
+                    GamePotion(
+                        BuiltInRegistries.POTION.wrapAsHolder(
+                            BuiltInRegistries.POTION.get(potion)!!
+                        )
+                    )
+                }
             }
+
+            val STREAM_CODEC: StreamCodec<ByteBuf, GamePotion> = StreamCodec.composite(
+                ResourceLocation.STREAM_CODEC, { it.potion.key!!.location() },
+                { GamePotion(BuiltInRegistries.POTION.wrapAsHolder(BuiltInRegistries.POTION.get(it)!!)) }
+            )
         }
     }
 
     data class CustomPotion(
         val name: String,
-        val effects: List<MobEffectInstance>,
+        val effects: List<PotionEffect>,
         val color: Int,
         val type: PotionType
     ) : PotionRef() {
@@ -51,7 +66,7 @@ sealed class PotionRef {
             val contents = PotionContents(
                 Optional.of(Potions.WATER),
                 Optional.of(color),
-                effects
+                effects.map { it.toInstance() }
             )
             val stack = ItemStack(
                 when (type) {
@@ -68,21 +83,26 @@ sealed class PotionRef {
         override fun getEffectColor(): Int = color
 
         companion object {
-            val CODEC = RecordCodecBuilder.create { instance ->
+            val CODEC: Codec<CustomPotion> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     Codec.STRING.fieldOf("name").forGetter(CustomPotion::name),
-                    MobEffectInstance.CODEC.listOf().fieldOf("name").forGetter(CustomPotion::effects),
+                    PotionEffect.CODEC.listOf().fieldOf("effects").forGetter(CustomPotion::effects),
                     Codec.INT.fieldOf("color").forGetter(CustomPotion::color),
                     Codec.STRING.fieldOf("type").forGetter { it.type.name },
                 ).apply(instance) { name, effects, color, type ->
-                    CustomPotion(
-                        name,
-                        effects,
-                        color,
-                        PotionType.valueOf(type)
-                    )
+                    CustomPotion(name, effects, color, PotionType.valueOf(type))
                 }
             }
+
+            val STREAM_CODEC: StreamCodec<ByteBuf, CustomPotion> = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8, { it.name },
+                ByteBufCodecs.collection({ mutableListOf() }, PotionEffect.STREAM_CODEC), { it.effects },
+                ByteBufCodecs.INT, { it.color },
+                ByteBufCodecs.STRING_UTF8, { it.type.name },
+                { name, effects, color, type ->
+                    CustomPotion(name, effects, color, PotionType.valueOf(type))
+                }
+            )
         }
     }
 
@@ -97,12 +117,20 @@ sealed class PotionRef {
         override fun getEffectColor(): Int = color
 
         companion object {
-            val CODEC = RecordCodecBuilder.create { instance ->
+            val CODEC: Codec<CustomItem> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     ItemStack.CODEC.fieldOf("item").forGetter(CustomItem::item),
                     Codec.INT.fieldOf("color").forGetter(CustomItem::color),
                 ).apply(instance) { item, color -> CustomItem(item, color) }
             }
+
+            val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, CustomItem> = StreamCodec.composite(
+                ItemStack.STREAM_CODEC, { it.item },
+                ByteBufCodecs.INT, { it.color },
+                { item, color ->
+                    CustomItem(item, color)
+                }
+            )
         }
     }
 
@@ -115,7 +143,7 @@ sealed class PotionRef {
 
         fun of(
             name: String,
-            effects: List<MobEffectInstance>,
+            effects: List<PotionEffect>,
             color: Int,
             type: PotionType = PotionType.NORMAL
         ): PotionRef =
@@ -124,31 +152,60 @@ sealed class PotionRef {
         fun of(item: ItemStack, color: Int): PotionRef =
             CustomItem(item, color)
 
-        val CODEC = Codec.xor(GamePotion.CODEC, Codec.xor(CustomPotion.CODEC, CustomItem.CODEC)).xmap({ either ->
+        val CODEC: Codec<DataResult<out PotionRef>> =
+            Codec.xor(GamePotion.CODEC, Codec.xor(CustomPotion.CODEC, CustomItem.CODEC)).xmap({ either ->
+                val left = either.left().getOrNull()
+                if (left != null) {
+                    return@xmap DataResult.success(left)
+                }
+                val right = either.right().getOrNull()
+                if (right != null) {
+                    val innerLeft = right.left().getOrNull()
+                    if (innerLeft != null) {
+                        return@xmap DataResult.success(innerLeft)
+                    }
+                    val innerRight = right.right().getOrNull()
+                    if (innerRight != null) {
+                        return@xmap DataResult.success(innerRight)
+                    }
+                }
+                DataResult.error { "Failed to deserialize PotionRef" }
+            }, { res ->
+                res.mapOrElse({
+                    when (it) {
+                        is GamePotion -> Either.left(it)
+                        is CustomPotion -> Either.right(Either.left(it))
+                        is CustomItem -> Either.right(Either.right(it))
+                    }
+                }, { null })
+            })
+
+        val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, PotionRef> = ByteBufCodecs.either(
+            GamePotion.STREAM_CODEC,
+            ByteBufCodecs.either(CustomPotion.STREAM_CODEC, CustomItem.STREAM_CODEC)
+        ).map({ either ->
             val left = either.left().getOrNull()
             if (left != null) {
-                return@xmap DataResult.success(left)
+                return@map left
             }
             val right = either.right().getOrNull()
             if (right != null) {
                 val innerLeft = right.left().getOrNull()
                 if (innerLeft != null) {
-                    return@xmap DataResult.success(innerLeft)
+                    return@map innerLeft
                 }
                 val innerRight = right.right().getOrNull()
                 if (innerRight != null) {
-                    return@xmap DataResult.success(innerRight)
+                    return@map innerRight
                 }
             }
-            DataResult.error { "Failed to deserialize PotionRef" }
+            throw IllegalArgumentException("Failed to deserialize PotionRef")
         }, { res ->
-            res.mapOrElse({
-                when (it) {
-                    is GamePotion -> Either.left(it)
-                    is CustomPotion -> Either.right(Either.left(it))
-                    is CustomItem -> Either.right(Either.right(it))
-                }
-            }, { null })
+            when (res) {
+                is GamePotion -> Either.left(res)
+                is CustomPotion -> Either.right(Either.left(res))
+                is CustomItem -> Either.right(Either.right(res))
+            }
         })
     }
 }

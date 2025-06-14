@@ -19,7 +19,7 @@ import kotlin.random.Random
 
 // Stores potion ingredients added to a cauldron
 class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state), BlockEntityExt {
+    BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state), MaybeSerializable {
 
     var items: MutableSet<ItemStack> = mutableSetOf()
     var ticksToNextSpray = 0
