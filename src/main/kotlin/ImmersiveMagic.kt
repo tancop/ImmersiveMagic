@@ -6,8 +6,11 @@ import dev.tancop.immersivemagic.recipes.BrewingRecipeProvider
 import dev.tancop.immersivemagic.recipes.BrewingRecipeSerializer
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.TagKey
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
@@ -92,11 +95,24 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             val generator = event.generator
             val output = generator.packOutput
             val lookupProvider = event.lookupProvider
+            val existingFileHelper = event.existingFileHelper
 
             generator.addProvider(
                 event.includeServer(),
                 BrewingRecipeProvider(output, lookupProvider)
             )
+
+            generator.addProvider(
+                event.includeServer(),
+                CompatTagsProvider(output, lookupProvider, existingFileHelper)
+            );
         }
+
+        val PISTON_BEHAVIOR_NORMAL: TagKey<Block?> = BlockTags.create(
+            ResourceLocation.fromNamespaceAndPath(
+                "pistoncommand",
+                "piston_behavior_normal"
+            )
+        )
     }
 }
