@@ -41,6 +41,8 @@ object ExtraInteractions {
                         stack.shrink(1)
                         player.inventory.add(recipe.value.result.getStack())
                         LayeredCauldronBlock.lowerFillLevel(state, level, pos)
+
+                        return ItemInteractionResult.CONSUME
                     }
                 } else {
                     // Item might still be part of a recipe
@@ -50,11 +52,13 @@ object ExtraInteractions {
                         stack.shrink(1)
 
                         entity.spawnParticles(level, pos, 20)
+
+                        return ItemInteractionResult.CONSUME
                     }
                 }
+                // no match
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
             }
-
-            return ItemInteractionResult.sidedSuccess(level.isClientSide)
         }
 
         return ItemInteractionResult.FAIL
