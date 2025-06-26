@@ -10,7 +10,11 @@
     "item": "minecraft:arrow"
   },
   "result": {
-    "color": -7888029,
+    "color": {
+      "blue": 99,
+      "green": 163,
+      "red": 135
+    },
     "item": {
       "components": {
         "minecraft:potion_contents": {

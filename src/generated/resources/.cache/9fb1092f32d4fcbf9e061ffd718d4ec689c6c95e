@@ -1,11 +1,11 @@
-// 1.21.1	2025-06-14T16:05:23.307562575	Recipes
+// 1.21.1	2025-06-25T19:01:12.865161241	Recipes
 e8797339530df79a511194be014a72533fea919e data/minecraft/advancement/brew_decay_potion.json
 db87513abe2b4c92c35193bc9af7f25c16ff0849 data/minecraft/advancement/brew_meth.json
 4b7730ae5b9f519154f36489b316dee17458215d data/minecraft/advancement/brew_poison_arrow.json
 390e93c6d337c4b8e9764e3dabc6a69cfd198754 data/minecraft/advancement/brew_poison_potion.json
 fff64eab428570b57d88ce56e557ad10de9f239c data/minecraft/advancement/brew_splash_decay_potion.json
-bf5b8b932c13f7b58997ccd56e3c4cab9df38e36 data/minecraft/recipe/decay_potion.json
+a23cc7e398f17a703d5b1f7a590c80c7b2816a02 data/minecraft/recipe/decay_potion.json
 88e59d00d5cdbedbeef23a1c2b0b23abe4f799ed data/minecraft/recipe/meth.json
-f5bbb550d897a5caf2a73af53745fcc194f2b3ae data/minecraft/recipe/poison_arrow.json
+88f85a662455b62908a30b5aa2542423b9c28e30 data/minecraft/recipe/poison_arrow.json
 919cf9876f90aa39abd214dbc0355d7e61ed7f50 data/minecraft/recipe/poison_potion.json
-1c75d8f332e94b74978e2f09b8f448dc9be291b6 data/minecraft/recipe/splash_decay_potion.json
+a7262df3c8e4a2b6dbcc760287009b15b9877b00 data/minecraft/recipe/splash_decay_potion.json

@@ -78,7 +78,7 @@ sealed class PotionRef {
                 instance.group(
                     Codec.STRING.fieldOf("name").forGetter(CustomPotion::name),
                     PotionEffect.CODEC.listOf().fieldOf("effects").forGetter(CustomPotion::effects),
-                    Codec.INT.fieldOf("color").forGetter(CustomPotion::color),
+                    ColorCodecs.RGB.fieldOf("color").forGetter(CustomPotion::color),
                     Codec.STRING.fieldOf("type").forGetter { it.type.name },
                 ).apply(instance) { name, effects, color, type ->
                     CustomPotion(name, effects, color, PotionType.valueOf(type))
@@ -101,7 +101,7 @@ sealed class PotionRef {
             val CODEC: Codec<CustomItem> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     ItemStack.CODEC.fieldOf("item").forGetter(CustomItem::item),
-                    Codec.INT.fieldOf("color").forGetter(CustomItem::color),
+                    ColorCodecs.RGB.fieldOf("color").forGetter(CustomItem::color),
                 ).apply(instance) { item, color -> CustomItem(item, color) }
             }
         }

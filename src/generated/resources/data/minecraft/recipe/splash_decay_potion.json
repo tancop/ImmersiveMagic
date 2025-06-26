@@ -14,7 +14,11 @@
   },
   "result": {
     "type": "SPLASH",
-    "color": -9215658,
+    "color": {
+      "blue": 86,
+      "green": 97,
+      "red": 115
+    },
     "effects": [
       {
         "ambient": false,
