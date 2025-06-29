@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.LayeredCauldronBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
-import kotlin.jvm.optionals.getOrNull
 
 object ExtraInteractions {
     fun fallbackInteract(
@@ -35,7 +34,8 @@ object ExtraInteractions {
                     val recipes = level.recipeManager
 
                     val input = BrewingRecipeInput(entity, stack)
-                    val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
+                    val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
+                        .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
 
                     if (recipe != null) {
                         stack.shrink(1)
@@ -102,7 +102,8 @@ object ExtraInteractions {
                 val recipes = level.recipeManager
 
                 val input = BrewingRecipeInput(entity, stack)
-                val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
+                val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
+                    .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
 
                 potionStack = if (recipe != null) {
                     recipe.value.result.getStack()
