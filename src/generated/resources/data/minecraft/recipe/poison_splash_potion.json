@@ -4,13 +4,16 @@
   "ingredients": [
     {
       "item": "minecraft:spider_eye"
+    },
+    {
+      "item": "minecraft:gunpowder"
     }
   ],
   "receiver": {
     "item": "minecraft:glass_bottle"
   },
   "result": {
-    "type": "NORMAL",
+    "type": "SPLASH",
     "potion": "minecraft:poison"
   }
 }

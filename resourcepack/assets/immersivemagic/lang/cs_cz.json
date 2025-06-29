@@ -1,3 +1,5 @@
 {
-  "potion.immersivemagic.decay_potion": "Lektvar rozkladu"
+  "potion.immersivemagic.decay_potion": "Lektvar rozkladu",
+  "potion.immersivemagic.decay_splash_potion": "Vrhací lektvar rozkladu",
+  "potion.immersivemagic.decay_lingering_potion": "Doznívající lektvar rozkladu"
 }

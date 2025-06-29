@@ -3,7 +3,7 @@
   "criteria": {
     "has_recipe": {
       "conditions": {
-        "recipe": "minecraft:splash_decay_potion"
+        "recipe": "minecraft:poison_lingering_potion"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -15,7 +15,7 @@
   ],
   "rewards": {
     "recipes": [
-      "minecraft:splash_decay_potion"
+      "minecraft:poison_lingering_potion"
     ]
   }
 }

@@ -7,13 +7,16 @@
     },
     {
       "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:dragon_breath"
     }
   ],
   "receiver": {
     "item": "minecraft:glass_bottle"
   },
   "result": {
-    "type": "SPLASH",
+    "type": "LINGERING",
     "color": {
       "blue": 86,
       "green": 97,
@@ -29,6 +32,6 @@
         "visible": true
       }
     ],
-    "name": "potion.immersivemagic.splash_decay_potion"
+    "name": "potion.immersivemagic.decay_lingering_potion"
   }
 }

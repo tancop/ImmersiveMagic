@@ -3,14 +3,17 @@
   "fireType": "SOUL",
   "ingredients": [
     {
-      "item": "minecraft:spider_eye"
+      "item": "minecraft:glistering_melon_slice"
+    },
+    {
+      "item": "minecraft:gunpowder"
     }
   ],
   "receiver": {
     "item": "minecraft:glass_bottle"
   },
   "result": {
-    "type": "NORMAL",
-    "potion": "minecraft:poison"
+    "type": "SPLASH",
+    "potion": "minecraft:healing"
   }
 }

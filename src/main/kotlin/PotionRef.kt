@@ -18,10 +18,20 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 sealed class PotionRef {
-    data class GamePotion(val potion: Holder<Potion>) : PotionRef() {
+    enum class PotionType {
+        NORMAL, SPLASH, LINGERING
+    }
+
+    data class GamePotion(val potion: Holder<Potion>, val potionType: PotionType) : PotionRef() {
         override fun getStack(): ItemStack {
             val contents = PotionContents(potion)
-            val stack = ItemStack(Items.POTION, 1)
+            val stack = ItemStack(
+                when (potionType) {
+                    PotionType.NORMAL -> Items.POTION
+                    PotionType.SPLASH -> Items.SPLASH_POTION
+                    PotionType.LINGERING -> Items.LINGERING_POTION
+                }, 1
+            )
             stack.set(DataComponents.POTION_CONTENTS, contents)
             return stack
         }
@@ -32,19 +42,17 @@ sealed class PotionRef {
             val CODEC: Codec<GamePotion> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     ResourceLocation.CODEC.fieldOf("potion").forGetter { it.potion.key!!.location() },
-                ).apply(instance) { potion ->
+                    Codec.STRING.fieldOf("type").forGetter { it.potionType.name },
+                ).apply(instance) { potion, type ->
                     GamePotion(
                         BuiltInRegistries.POTION.wrapAsHolder(
                             BuiltInRegistries.POTION.get(potion)!!
-                        )
+                        ),
+                        PotionType.valueOf(type)
                     )
                 }
             }
         }
-    }
-
-    enum class PotionType {
-        NORMAL, SPLASH, LINGERING
     }
 
     data class CustomPotion(
@@ -111,8 +119,8 @@ sealed class PotionRef {
     abstract fun getEffectColor(): Int
 
     companion object {
-        fun of(potion: Holder<Potion>): PotionRef =
-            GamePotion(potion)
+        fun of(potion: Holder<Potion>, type: PotionType = PotionType.NORMAL): PotionRef =
+            GamePotion(potion, type)
 
         fun of(
             name: String,

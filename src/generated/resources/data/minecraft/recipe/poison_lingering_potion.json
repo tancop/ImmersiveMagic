@@ -4,13 +4,19 @@
   "ingredients": [
     {
       "item": "minecraft:spider_eye"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:dragon_breath"
     }
   ],
   "receiver": {
     "item": "minecraft:glass_bottle"
   },
   "result": {
-    "type": "NORMAL",
+    "type": "LINGERING",
     "potion": "minecraft:poison"
   }
 }

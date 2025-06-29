@@ -1,0 +1,34 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:wither_rose"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "SPLASH",
+    "color": {
+      "blue": 86,
+      "green": 97,
+      "red": 115
+    },
+    "effects": [
+      {
+        "ambient": false,
+        "amplifier": 0,
+        "duration": 800,
+        "effect": "minecraft:wither",
+        "showIcon": true,
+        "visible": true
+      }
+    ],
+    "name": "potion.immersivemagic.decay_splash_potion"
+  }
+}

@@ -3,7 +3,7 @@
   "criteria": {
     "has_recipe": {
       "conditions": {
-        "recipe": "minecraft:poison_arrow"
+        "recipe": "minecraft:strong_healing_lingering_potion"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -15,7 +15,7 @@
   ],
   "rewards": {
     "recipes": [
-      "minecraft:poison_arrow"
+      "minecraft:strong_healing_lingering_potion"
     ]
   }
 }

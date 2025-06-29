@@ -3,7 +3,10 @@
   "fireType": "SOUL",
   "ingredients": [
     {
-      "item": "minecraft:spider_eye"
+      "item": "minecraft:magma_cream"
+    },
+    {
+      "item": "minecraft:redstone"
     }
   ],
   "receiver": {
@@ -11,6 +14,6 @@
   },
   "result": {
     "type": "NORMAL",
-    "potion": "minecraft:poison"
+    "potion": "minecraft:long_fire_resistance"
   }
 }
