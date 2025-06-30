@@ -1,0 +1,22 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:blaze_powder"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "SPLASH",
+    "potion": "minecraft:strength"
+  }
+}

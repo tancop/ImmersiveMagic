@@ -1,0 +1,19 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:phantom_membrane"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "NORMAL",
+    "potion": "minecraft:slow_falling"
+  }
+}

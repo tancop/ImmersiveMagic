@@ -1,0 +1,25 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:golden_carrot"
+    },
+    {
+      "item": "minecraft:fermented_spider_eye"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "NORMAL",
+    "potion": "minecraft:long_invisibility"
+  }
+}

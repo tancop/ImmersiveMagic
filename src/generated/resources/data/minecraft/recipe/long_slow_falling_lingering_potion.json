@@ -1,0 +1,28 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:phantom_membrane"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:dragon_breath"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "LINGERING",
+    "potion": "minecraft:long_slow_falling"
+  }
+}

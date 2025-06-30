@@ -1,0 +1,19 @@
+{
+  "type": "immersivemagic:brewing",
+  "fireType": "SOUL",
+  "ingredients": [
+    {
+      "item": "minecraft:ghast_tear"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    }
+  ],
+  "receiver": {
+    "item": "minecraft:glass_bottle"
+  },
+  "result": {
+    "type": "NORMAL",
+    "potion": "minecraft:regeneration"
+  }
+}

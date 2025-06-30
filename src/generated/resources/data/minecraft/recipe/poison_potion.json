@@ -4,6 +4,9 @@
   "ingredients": [
     {
       "item": "minecraft:spider_eye"
+    },
+    {
+      "item": "minecraft:nether_wart"
     }
   ],
   "receiver": {

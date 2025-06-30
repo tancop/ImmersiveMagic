@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_recipe": {
+      "conditions": {
+        "recipe": "minecraft:strong_turtle_master_splash_potion"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:strong_turtle_master_splash_potion"
+    ]
+  }
+}
