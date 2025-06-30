@@ -1,6 +1,5 @@
 package dev.tancop.immersivemagic
 
-import com.mojang.logging.LogUtils
 import dev.tancop.immersivemagic.recipes.BrewingRecipe
 import dev.tancop.immersivemagic.recipes.BrewingRecipeProvider
 import dev.tancop.immersivemagic.recipes.BrewingRecipeSerializer
@@ -23,7 +22,6 @@ import net.neoforged.neoforge.data.event.GatherDataEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
-import org.slf4j.Logger
 import java.util.function.Supplier
 
 
@@ -55,9 +53,6 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
     companion object {
         // Define mod id in a common place for everything to reference
         const val MOD_ID: String = "immersivemagic"
-
-        // Directly reference a slf4j logger
-        private val LOGGER: Logger = LogUtils.getLogger()
 
         val BLOCK_ENTITY_TYPES: DeferredRegister<BlockEntityType<*>> =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID)
@@ -105,7 +100,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             generator.addProvider(
                 event.includeServer(),
                 CompatTagsProvider(output, lookupProvider, existingFileHelper)
-            );
+            )
         }
 
         val PISTON_BEHAVIOR_NORMAL: TagKey<Block?> = BlockTags.create(
