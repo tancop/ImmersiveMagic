@@ -72,7 +72,7 @@ class BrewingRecipe(
         private var cachedItems: Set<Ingredient>? = null
 
         fun getAcceptedIngredients(level: Level): Set<Ingredient> {
-            cachedItems?.let { return it }
+            if (cachedItems != null) return cachedItems!!
 
             val recipes = level.recipeManager.getAllRecipesFor(ImmersiveMagic.BREWING.get())
 
