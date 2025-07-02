@@ -8,7 +8,6 @@ import dev.tancop.immersivemagic.FireType
 import dev.tancop.immersivemagic.PotionRef
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
-import net.minecraft.world.item.Items
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.RecipeSerializer
 
@@ -23,15 +22,12 @@ class BrewingRecipeSerializer : RecipeSerializer<BrewingRecipe> {
             instance.group(
                 Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(BrewingRecipe::ingredients),
                 Codec.STRING.fieldOf("fireType").forGetter { it.fireType.name },
-                PotionRef.Companion.CODEC.fieldOf("result").forGetter { DataResult.success(it.result) },
-                Ingredient.CODEC.orElse(Ingredient.of(Items.GLASS_BOTTLE)).fieldOf("receiver")
-                    .forGetter { it.potionReceiver }
-            ).apply(instance) { items, fireType, result, potionReceiver ->
+                PotionRef.Companion.CODEC.fieldOf("result").forGetter { DataResult.success(it.result) }
+            ).apply(instance) { items, fireType, result ->
                 BrewingRecipe(
                     items,
                     FireType.valueOf(fireType),
-                    result.getOrThrow { IllegalArgumentException("Empty result in recipe: ${result.error()}") },
-                    potionReceiver
+                    result.getOrThrow { IllegalStateException("Empty result in recipe: ${result.error()}") },
                 )
             }
         }

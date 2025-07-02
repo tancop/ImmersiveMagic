@@ -1,7 +1,7 @@
 package dev.tancop.immersivemagic
 
+import com.mojang.serialization.DataResult
 import dev.tancop.immersivemagic.ImmersiveMagic.Companion.WATER_CAULDRON_BLOCK_ENTITY
-import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.particles.ColorParticleOption
@@ -16,7 +16,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
-import kotlin.jvm.optionals.getOrNull
 import kotlin.random.Random
 
 // Stores potion ingredients added to a cauldron
@@ -24,6 +23,7 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
     BlockEntity(WATER_CAULDRON_BLOCK_ENTITY.get(), pos, state), MaybeSerializable {
 
     var items: MutableList<ItemStack> = mutableListOf()
+    var storedPotion: PotionRef? = null
     var ticksToNextSpray = 0
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
@@ -38,6 +38,11 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
         }
 
         tag.put("items", listTag)
+
+        tag.put(
+            "storedPotion",
+            PotionRef.CODEC.encodeStart(NbtOps.INSTANCE, DataResult.success(storedPotion)).result().get()
+        )
     }
 
     override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
@@ -50,6 +55,11 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
             val stack = ItemStack.CODEC.decode(NbtOps.INSTANCE, item).result().get().first
             items.add(stack)
         }
+
+        val potionTag = tag.get("storedPotion")
+
+        storedPotion = PotionRef.CODEC.decode(NbtOps.INSTANCE, potionTag).result()
+            .get().first.getOrThrow { IllegalStateException("Invalid stored potion") }
     }
 
     // Server-only block entity, if we send it to clients without this mod installed
@@ -60,19 +70,10 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
     // Spawn effect particles based on the potion inside
     fun spawnParticles(level: Level, pos: BlockPos, count: Int) {
-        // No ingredients stored
+        // No particles for pure water
         if (items.isEmpty()) return
 
-        val recipes = level.recipeManager
-
-        val input = BrewingRecipeInput(this, ItemStack.EMPTY, true)
-        val recipe = recipes.getRecipeFor(ImmersiveMagic.BREWING.get(), input, level).getOrNull()
-
-        var color = FastColor.ARGB32.color(255, 255, 255, 255)
-
-        if (recipe != null) {
-            color = recipe.value.result.getEffectColor()
-        }
+        val color = storedPotion?.getEffectColor() ?: FastColor.ARGB32.color(255, 255, 255, 255)
 
         val particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color)
         (level as ServerLevel).sendParticles(

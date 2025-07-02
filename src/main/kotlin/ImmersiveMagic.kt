@@ -1,8 +1,6 @@
 package dev.tancop.immersivemagic
 
-import dev.tancop.immersivemagic.recipes.BrewingRecipe
-import dev.tancop.immersivemagic.recipes.BrewingRecipeProvider
-import dev.tancop.immersivemagic.recipes.BrewingRecipeSerializer
+import dev.tancop.immersivemagic.recipes.*
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
@@ -80,11 +78,22 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 )
             })
 
+        val DIPPING: DeferredHolder<RecipeType<*>, RecipeType<DippingRecipe>> = RECIPE_TYPES.register(
+            "dipping",
+            Supplier {
+                RecipeType.simple<DippingRecipe>(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "dipping")
+                )
+            })
+
         val RECIPE_SERIALIZERS: DeferredRegister<RecipeSerializer<*>> =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID)
 
         val BREWING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, BrewingRecipeSerializer> =
             RECIPE_SERIALIZERS.register("brewing", Supplier { BrewingRecipeSerializer() })
+
+        val DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, DippingRecipeSerializer> =
+            RECIPE_SERIALIZERS.register("dipping", Supplier { DippingRecipeSerializer() })
 
         fun gatherData(event: GatherDataEvent) {
             val generator = event.generator

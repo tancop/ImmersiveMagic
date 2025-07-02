@@ -2,6 +2,7 @@ package dev.tancop.immersivemagic
 
 import dev.tancop.immersivemagic.recipes.BrewingRecipe
 import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
+import dev.tancop.immersivemagic.recipes.DippingRecipeInput
 import net.minecraft.core.BlockPos
 import net.minecraft.core.cauldron.CauldronInteraction
 import net.minecraft.core.component.DataComponents
@@ -21,6 +22,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.LayeredCauldronBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
+import kotlin.jvm.optionals.getOrNull
 
 object ExtraInteractions {
     fun fallbackInteract(
@@ -33,25 +35,35 @@ object ExtraInteractions {
                     // Look for dipping recipes
                     val recipes = level.recipeManager
 
-                    val input = BrewingRecipeInput(entity, stack)
-                    val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
-                        .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
+                    val input = DippingRecipeInput(entity, stack)
+                    val recipe = recipes.getRecipeFor(ImmersiveMagic.DIPPING.get(), input, level)
 
-                    if (recipe != null) {
-                        stack.shrink(1)
-                        player.inventory.add(recipe.value.result.getStack())
+                    val result = recipe.getOrNull()?.value?.result
+
+                    if (result != null) {
+                        player.inventory.add(result)
                         LayeredCauldronBlock.lowerFillLevel(state, level, pos)
+
+                        if (!player.isCreative) stack.shrink(1)
 
                         return ItemInteractionResult.CONSUME
                     }
                 } else {
                     // Item might still be part of a recipe
-
                     if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
                         entity.items.add(stack)
-                        stack.shrink(1)
+
+                        val recipes = level.recipeManager
+
+                        val input = BrewingRecipeInput(entity)
+                        val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
+                            .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
+
+                        entity.storedPotion = recipe?.value?.result
 
                         entity.spawnParticles(level, pos, 20)
+
+                        if (!player.isCreative) stack.shrink(1)
 
                         return ItemInteractionResult.CONSUME
                     }
@@ -65,7 +77,7 @@ object ExtraInteractions {
     }
 
     val waterBucketInteraction = CauldronInteraction { state, level, pos, player, hand, stack ->
-        // Dilute potion
+        // Filling with a water bucket dilutes any potion inside
         if (!level.isClientSide) {
             val newState = Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3)
 
@@ -77,6 +89,7 @@ object ExtraInteractions {
 
             val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
             entity?.items?.clear()
+            entity?.storedPotion = null
 
             level.setBlockAndUpdate(pos, newState)
 
@@ -92,24 +105,14 @@ object ExtraInteractions {
         if (!level.isClientSide) {
             val item = stack.item
 
-            val potionStack: ItemStack?
-
             val entity = level.getBlockEntity(pos) as LayeredCauldronBlockEntity
 
-            if (entity.items.isEmpty()) {
-                potionStack = PotionContents.createItemStack(Items.POTION, Potions.WATER)
+            val potionStack = if (entity.items.isEmpty()) {
+                // No ingredients -> water
+                PotionContents.createItemStack(Items.POTION, Potions.WATER)
             } else {
-                val recipes = level.recipeManager
-
-                val input = BrewingRecipeInput(entity, stack)
-                val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
-                    .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
-
-                potionStack = if (recipe != null) {
-                    recipe.value.result.getStack()
-                } else {
-                    PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
-                }
+                // Stored potion if there is one, mundane if not (= invalid recipe)
+                entity.storedPotion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
             }
 
             player.inventory.add(potionStack)
@@ -129,6 +132,7 @@ object ExtraInteractions {
     val potionInteraction = CauldronInteraction { state, level, pos, player, hand, stack ->
         // Inserting a water bottle or some other type of potion
         if (state.getValue(LayeredCauldronBlock.LEVEL) == 3) {
+            // Cauldron is already full
             ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
         } else {
             val potionContents = stack.get(DataComponents.POTION_CONTENTS)
@@ -154,6 +158,7 @@ object ExtraInteractions {
 
                 ItemInteractionResult.sidedSuccess(level.isClientSide)
             } else {
+                // Only water potions can be inserted
                 ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
             }
         }
