@@ -9,7 +9,8 @@
     "BlockEntityMixin",
     "ClientboundLevelChunkPacketDataMixin",
     "ClientboundUpdateRecipesPacketMixin",
-    "LayeredCauldronBlockMixin"
+    "LayeredCauldronBlockMixin",
+    "PotionBrewingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

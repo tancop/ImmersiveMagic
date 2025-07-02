@@ -5,25 +5,24 @@ import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.event.config.ModConfigEvent
 import net.neoforged.neoforge.common.ModConfigSpec
 
-// An example config class. This is not required, but it's a good idea to have one to keep your config organized.
-// Demonstrates how to use Neo's config APIs
 @EventBusSubscriber(modid = ImmersiveMagic.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 object Config {
     private val BUILDER = ModConfigSpec.Builder()
 
-    private val LOG_DIRT_BLOCK: ModConfigSpec.BooleanValue = BUILDER
-        .comment("Whether to log the dirt block on common setup")
-        .define("logDirtBlock", true)
+    private val DISABLE_VANILLA_BREWING: ModConfigSpec.BooleanValue = BUILDER
+        .comment("Disable normal brewing for vanilla effect potions? You need to restart the server to apply this setting.")
+        .translation("config.immersivemagic.disable_vanilla_brewing")
+        .define("disable_vanilla_brewing", false)
 
     val SPEC: ModConfigSpec = BUILDER.build()
 
-    var logDirtBlock: Boolean = false
+    var disableVanillaBrewing: Boolean = false
 
     @SubscribeEvent
     fun onLoad(event: ModConfigEvent?) {
         when (event) {
             is ModConfigEvent.Loading, is ModConfigEvent.Reloading -> {
-                logDirtBlock = LOG_DIRT_BLOCK.get()
+                disableVanillaBrewing = DISABLE_VANILLA_BREWING.get()
             }
         }
     }
