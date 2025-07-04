@@ -25,6 +25,23 @@ import net.minecraft.world.level.gameevent.GameEvent
 import kotlin.jvm.optionals.getOrNull
 
 object ExtraInteractions {
+    // Checks for a matching recipe, sets the stored potion and emits particles
+    private fun checkRecipesAndUpdate(
+        level: Level,
+        entity: LayeredCauldronBlockEntity,
+        pos: BlockPos
+    ) {
+        val recipes = level.recipeManager
+
+        val input = BrewingRecipeInput(entity)
+        val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
+            .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
+
+        entity.storedPotion = recipe?.value?.result
+
+        entity.spawnParticles(level, pos, 20)
+    }
+
     fun fallbackInteract(
         stack: ItemStack, state: BlockState, level: Level, pos: BlockPos, player: Player, hand: InteractionHand,
     ): ItemInteractionResult {
@@ -53,15 +70,7 @@ object ExtraInteractions {
                     if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
                         entity.items.add(stack)
 
-                        val recipes = level.recipeManager
-
-                        val input = BrewingRecipeInput(entity)
-                        val recipe = recipes.getAllRecipesFor(ImmersiveMagic.BREWING.get())
-                            .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
-
-                        entity.storedPotion = recipe?.value?.result
-
-                        entity.spawnParticles(level, pos, 20)
+                        checkRecipesAndUpdate(level, entity, pos)
 
                         if (!player.isCreative) stack.shrink(1)
 
@@ -162,5 +171,16 @@ object ExtraInteractions {
                 ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
             }
         }
+    }
+
+    val stirInteraction = CauldronInteraction { state, level, pos, player, hand, stack ->
+        // Player right-clicked with an empty hand to force a recipe check
+        if (!level.isClientSide) {
+            val entity = level.getBlockEntity(pos) as LayeredCauldronBlockEntity
+
+            checkRecipesAndUpdate(level, entity, pos)
+        }
+
+        ItemInteractionResult.SUCCESS
     }
 }

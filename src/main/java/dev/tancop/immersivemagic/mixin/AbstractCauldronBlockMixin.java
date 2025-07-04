@@ -34,6 +34,7 @@ public abstract class AbstractCauldronBlockMixin {
         CauldronInteraction.WATER.map().put(Items.GLASS_BOTTLE, ExtraInteractions.INSTANCE.getBottleInteraction());
         CauldronInteraction.WATER.map().put(Items.WATER_BUCKET, ExtraInteractions.INSTANCE.getWaterBucketInteraction());
         CauldronInteraction.WATER.map().put(Items.POTION, ExtraInteractions.INSTANCE.getPotionInteraction());
+        CauldronInteraction.WATER.map().put(Items.AIR, ExtraInteractions.INSTANCE.getStirInteraction());
 
         CauldronInteraction interaction = this.interactions.map().get(insertedItem);
         ItemInteractionResult result = interaction.interact(state, level, pos, player, hand, stack);
