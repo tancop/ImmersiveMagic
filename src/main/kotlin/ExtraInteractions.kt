@@ -124,6 +124,7 @@ object ExtraInteractions {
                 entity.storedPotion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
             }
 
+            if (!player.isCreative) stack.shrink(1)
             player.inventory.add(potionStack)
 
             player.awardStat(Stats.USE_CAULDRON)
