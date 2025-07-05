@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import kotlin.jvm.optionals.getOrNull
 import kotlin.random.Random
 
 // Stores potion ingredients added to a cauldron
@@ -39,9 +40,15 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         tag.put("items", listTag)
 
+        val dataResult = if (storedPotion != null) {
+            DataResult.success(storedPotion!!)
+        } else {
+            DataResult.error { "" }
+        }
+
         tag.put(
             "storedPotion",
-            PotionRef.CODEC.encodeStart(NbtOps.INSTANCE, DataResult.success(storedPotion)).result().get()
+            PotionRef.CODEC.encodeStart(NbtOps.INSTANCE, dataResult).result().get()
         )
     }
 
@@ -58,8 +65,9 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         val potionTag = tag.get("storedPotion")
 
-        storedPotion = PotionRef.CODEC.decode(NbtOps.INSTANCE, potionTag).result()
-            .get().first.getOrThrow { IllegalStateException("Invalid stored potion") }
+        storedPotion =
+            PotionRef.CODEC.decode(NbtOps.INSTANCE, potionTag).result().getOrNull()
+                ?.first?.result()?.getOrNull()
     }
 
     // Server-only block entity, if we send it to clients without this mod installed
