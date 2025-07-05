@@ -17,6 +17,7 @@ import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.util.TriState
 import net.neoforged.neoforge.data.event.GatherDataEvent
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
@@ -38,11 +39,23 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
             val state = event.level.getBlockState(event.pos)
             if (state.`is`(Blocks.WATER_CAULDRON) && event.entity.isCrouching) {
+                // Sneaking normally disables interactions but we want to use it for dipping
                 event.useBlock = TriState.TRUE
             }
         }
 
+        fun onLivingDeath(event: LivingDeathEvent) {
+            val entity = event.entity
+            val level = entity.level()
+            if (level.isClientSide) return
+
+            val pos = entity.blockPosition().below()
+            
+            SacrificeMechanics.handleEntityDeath(level, pos, entity)
+        }
+
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClick(it) }
+        NeoForge.EVENT_BUS.addListener<LivingDeathEvent> { onLivingDeath(it) }
         modEventBus.addListener<GatherDataEvent> { gatherData(it) }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
