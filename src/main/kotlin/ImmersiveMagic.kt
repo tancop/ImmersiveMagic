@@ -5,6 +5,8 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.tags.TagKey
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.Block
@@ -50,8 +52,12 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             if (level.isClientSide) return
 
             val pos = entity.blockPosition().below()
-            
-            SacrificeMechanics.handleEntityDeath(level, pos, entity)
+
+            val source = event.source
+            val killer = source.entity
+            if (killer != null && killer.type == (EntityType.PLAYER)) {
+                SacrificeMechanics.handleEntityDeath(level, pos, entity, killer as Player)
+            }
         }
 
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClick(it) }
@@ -99,6 +105,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 )
             })
 
+        val SACRIFICE: DeferredHolder<RecipeType<*>, RecipeType<SacrificeRecipe>> = RECIPE_TYPES.register(
+            "sacrifice",
+            Supplier {
+                RecipeType.simple<SacrificeRecipe>(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "sacrifice")
+                )
+            })
+
         val RECIPE_SERIALIZERS: DeferredRegister<RecipeSerializer<*>> =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID)
 
@@ -107,6 +121,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         val DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, DippingRecipeSerializer> =
             RECIPE_SERIALIZERS.register("dipping", Supplier { DippingRecipeSerializer() })
+
+        val SACRIFICE_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SacrificeRecipeSerializer> =
+            RECIPE_SERIALIZERS.register("sacrifice", Supplier { SacrificeRecipeSerializer() })
 
         fun gatherData(event: GatherDataEvent) {
             val generator = event.generator

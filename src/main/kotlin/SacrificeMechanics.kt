@@ -1,18 +1,20 @@
 package dev.tancop.immersivemagic
 
+import dev.tancop.immersivemagic.recipes.SacrificeRecipeInput
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LightningBolt
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
+import kotlin.jvm.optionals.getOrNull
 
 object SacrificeMechanics {
-    fun handleEntityDeath(level: Level, pos: BlockPos, deadEntity: LivingEntity) {
+    fun handleEntityDeath(level: Level, pos: BlockPos, deadEntity: LivingEntity, player: Player) {
         val corePos = if (level.getBlockState(pos).`is`(Blocks.GOLD_BLOCK)) {
-            if (isValidAltarCore(level, pos)) {
-                pos
-            } else {
-                null
-            }
+            pos.takeIf { isValidAltarCore(level, pos) }
         } else if (level.getBlockState(pos).`is`(Blocks.POLISHED_DIORITE_SLAB)) {
             findPossibleCores(level, pos).firstOrNull { isValidAltarCore(level, it) }
         } else {
@@ -20,7 +22,30 @@ object SacrificeMechanics {
         }
 
         if (corePos != null) {
-            println("Entity died on altar")
+            val recipes = level.recipeManager
+            val input = SacrificeRecipeInput(player, deadEntity)
+
+            val result = recipes.getRecipeFor(ImmersiveMagic.SACRIFICE.get(), input, level)
+                .getOrNull()?.value?.result
+
+            if (result != null) {
+                val spawnPos = corePos.above()
+                (0..3).forEach { _ ->
+                    level.addFreshEntity(LightningBolt(EntityType.LIGHTNING_BOLT, level).apply {
+                        setVisualOnly(true)
+                        setPos(
+                            spawnPos.center
+                        )
+                    })
+                }
+
+                level.addFreshEntity(
+                    ItemEntity(
+                        level, spawnPos.x.toDouble(),
+                        spawnPos.y.toDouble(), spawnPos.z.toDouble(), result
+                    )
+                )
+            }
         }
     }
 
