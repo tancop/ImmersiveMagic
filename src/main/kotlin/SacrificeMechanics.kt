@@ -25,8 +25,9 @@ object SacrificeMechanics {
             val recipes = level.recipeManager
             val input = SacrificeRecipeInput(player, deadEntity)
 
-            val result = recipes.getRecipeFor(ImmersiveMagic.SACRIFICE.get(), input, level)
-                .getOrNull()?.value?.result
+            val recipe = recipes.getRecipeFor(ImmersiveMagic.SACRIFICE.get(), input, level)
+                .getOrNull()?.value
+            val result = recipe?.result
 
             if (result != null) {
                 val spawnPos = corePos.above()
@@ -45,6 +46,8 @@ object SacrificeMechanics {
                         spawnPos.y.toDouble(), spawnPos.z.toDouble(), result
                     )
                 )
+
+                player.giveExperiencePoints(-recipe.xpCost)
             }
         }
     }
