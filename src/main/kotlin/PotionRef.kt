@@ -158,7 +158,7 @@ sealed class PotionRef {
                         is CustomPotion -> Either.right(Either.left(it))
                         is CustomItem -> Either.right(Either.right(it))
                     }
-                }, { null })
+                }, { Either.left(null) })
             })
     }
 }
