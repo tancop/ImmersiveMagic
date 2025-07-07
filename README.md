@@ -22,3 +22,17 @@ can also [add new recipes](./docs/Writing_Recipes.md) to tweak gameplay or add n
 
 Some items can be dipped in a potion to transform them into something new. Right click a potion filled cauldron while
 sneaking with an item in your hand. This consumes the item and gives you the result.
+
+# Sacrifice
+
+You can sacrifice some mobs to get extra rewards with their normal drops. You need an altar built like this:
+
+```
+XXX
+XGX
+XXX
+```
+
+where `G` is a gold block and `X` is a top-half polished diorite slab. When you (or any other player) kill a mob of the
+right type on top of the altar, lightning strikes on the gold block and you receive the drops. Some sacrifices cost XP
+and can't be performed if you have less than the required amount.
