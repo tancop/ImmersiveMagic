@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
 import kotlin.jvm.optionals.getOrNull
 
-object ExtraInteractions {
+object CauldronHandlers {
     // Checks for a matching recipe, sets the stored potion and emits particles
     private fun checkRecipesAndUpdate(
         level: Level,
@@ -58,7 +58,7 @@ object ExtraInteractions {
                     val result = recipe.getOrNull()?.value?.result
 
                     if (result != null) {
-                        player.inventory.add(result)
+                        player.inventory.add(result.copy())
                         LayeredCauldronBlock.lowerFillLevel(state, level, pos)
 
                         if (!player.isCreative) stack.shrink(1)
@@ -68,7 +68,7 @@ object ExtraInteractions {
                 } else {
                     // Item might still be part of a recipe
                     if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
-                        entity.items.add(stack)
+                        entity.items.add(stack.copy())
 
                         checkRecipesAndUpdate(level, entity, pos)
 

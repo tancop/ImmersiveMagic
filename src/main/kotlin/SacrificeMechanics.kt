@@ -43,7 +43,7 @@ object SacrificeMechanics {
                 level.addFreshEntity(
                     ItemEntity(
                         level, spawnPos.x.toDouble(),
-                        spawnPos.y.toDouble(), spawnPos.z.toDouble(), result
+                        spawnPos.y.toDouble(), spawnPos.z.toDouble(), result.copy()
                     )
                 )
 

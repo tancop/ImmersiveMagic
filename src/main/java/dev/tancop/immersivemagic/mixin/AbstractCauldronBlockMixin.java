@@ -1,6 +1,6 @@
 package dev.tancop.immersivemagic.mixin;
 
-import dev.tancop.immersivemagic.ExtraInteractions;
+import dev.tancop.immersivemagic.CauldronHandlers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.world.InteractionHand;
@@ -31,16 +31,16 @@ public abstract class AbstractCauldronBlockMixin {
                            BlockHitResult hitResult, CallbackInfoReturnable<ItemInteractionResult> cir) {
         Item insertedItem = stack.getItem();
 
-        CauldronInteraction.WATER.map().put(Items.GLASS_BOTTLE, ExtraInteractions.INSTANCE.getBottleInteraction());
-        CauldronInteraction.WATER.map().put(Items.WATER_BUCKET, ExtraInteractions.INSTANCE.getWaterBucketInteraction());
-        CauldronInteraction.WATER.map().put(Items.POTION, ExtraInteractions.INSTANCE.getPotionInteraction());
-        CauldronInteraction.WATER.map().put(Items.AIR, ExtraInteractions.INSTANCE.getStirInteraction());
+        CauldronInteraction.WATER.map().put(Items.GLASS_BOTTLE, CauldronHandlers.INSTANCE.getBottleInteraction());
+        CauldronInteraction.WATER.map().put(Items.WATER_BUCKET, CauldronHandlers.INSTANCE.getWaterBucketInteraction());
+        CauldronInteraction.WATER.map().put(Items.POTION, CauldronHandlers.INSTANCE.getPotionInteraction());
+        CauldronInteraction.WATER.map().put(Items.AIR, CauldronHandlers.INSTANCE.getStirInteraction());
 
         CauldronInteraction interaction = this.interactions.map().get(insertedItem);
         ItemInteractionResult result = interaction.interact(state, level, pos, player, hand, stack);
 
         if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && !level.isClientSide) {
-            result = ExtraInteractions.INSTANCE.fallbackInteract(stack, state, level, pos, player, hand);
+            result = CauldronHandlers.INSTANCE.fallbackInteract(stack, state, level, pos, player, hand);
         }
 
         cir.setReturnValue(result);
