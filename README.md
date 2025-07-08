@@ -36,3 +36,7 @@ XXX
 where `G` is a gold block and `X` is a top-half polished diorite slab. When you (or any other player) kill a mob of the
 right type on top of the altar, lightning strikes on the gold block and you receive the drops. Some sacrifices cost XP
 and can't be performed if you have less than the required amount.
+
+Some recipes need specific items dropped on the altar so the sacrifice can transform them - for example turning an iron
+ingot into gold by killing a pig. You can use bigger stacks instead of the exact amount, but any extra items on the
+altar will make the recipe fail.

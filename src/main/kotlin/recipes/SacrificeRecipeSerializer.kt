@@ -8,7 +8,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.RecipeSerializer
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 class SacrificeRecipeSerializer : RecipeSerializer<SacrificeRecipe> {
     override fun codec(): MapCodec<SacrificeRecipe> = CODEC
@@ -22,11 +25,13 @@ class SacrificeRecipeSerializer : RecipeSerializer<SacrificeRecipe> {
                 ResourceLocation.CODEC.fieldOf("entity").forGetter { it.entity.key!!.location() },
                 Codec.INT.fieldOf("xp_cost").forGetter(SacrificeRecipe::xpCost),
                 ItemStack.CODEC.fieldOf("result").forGetter(SacrificeRecipe::result),
-            ).apply(instance) { entity, xpCost, result ->
+                Ingredient.CODEC.listOf().optionalFieldOf("items").forGetter { Optional.ofNullable(it.items) }
+            ).apply(instance) { entity, xpCost, result, items ->
                 SacrificeRecipe(
                     BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(BuiltInRegistries.ENTITY_TYPE.get(entity)),
                     xpCost,
-                    result
+                    result,
+                    items.getOrNull()
                 )
             }
         }

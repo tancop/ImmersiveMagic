@@ -120,8 +120,14 @@ dipped item. The container is consumed together with one level from the cauldron
   "type": "immersivemagic:sacrifice",
   // resource location for the sacrificed mob
   "entity": "minecraft:goat",
-  // XP points (not levels) taken from the killing player, can be 0 or negative
-  "xp_cost": 15,
+  // optional, items used together with the mob
+  "items": [
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  // XP points (not levels) taken from the killing player, can be negative to give points
+  "xp_cost": 0,
   // stack dropped on the core block after a successful sacrifice
   "result": {
     "count": 1,

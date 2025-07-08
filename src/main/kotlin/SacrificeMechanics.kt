@@ -9,6 +9,9 @@ import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
+import net.neoforged.neoforge.common.util.RecipeMatcher
 import kotlin.jvm.optionals.getOrNull
 
 object SacrificeMechanics {
@@ -22,14 +25,30 @@ object SacrificeMechanics {
         }
 
         if (corePos != null) {
+            val start = corePos.above().north().west()
+            val end = corePos.above().south().east()
+
+            val area = AABB(
+                Vec3(start.x.toDouble(), start.y - 0.5, start.z.toDouble()),
+                Vec3(end.x + 1.0, end.y + 1.0, end.z + 1.0)
+            )
+
+            @Suppress("UNCHECKED_CAST") // all returned entities are items
+            val droppedItems = level.getEntities(null, area) {
+                it.type == EntityType.ITEM
+            } as List<ItemEntity>
+
+            val stacks = droppedItems.map { it.item }
+
             val recipes = level.recipeManager
-            val input = SacrificeRecipeInput(player, deadEntity)
+            val input = SacrificeRecipeInput(player, deadEntity, stacks)
 
             val recipe = recipes.getRecipeFor(ImmersiveMagic.SACRIFICE.get(), input, level)
                 .getOrNull()?.value
-            val result = recipe?.result
 
-            if (result != null) {
+            if (recipe != null) {
+                val result = recipe.result
+
                 val spawnPos = corePos.above()
                 (0..3).forEach { _ ->
                     level.addFreshEntity(LightningBolt(EntityType.LIGHTNING_BOLT, level).apply {
@@ -48,6 +67,32 @@ object SacrificeMechanics {
                 )
 
                 player.giveExperiencePoints(-recipe.xpCost)
+
+                if (recipe.items != null) {
+                    RecipeMatcher.findMatches(stacks, recipe.items)?.let { matches ->
+                        for (i in 0..<matches.size) {
+                            val match = matches[i]
+                            val ingredient = recipe.items[match]
+                            val stack = stacks[i]
+
+                            for (item in ingredient.items) {
+                                if (item.item == stack.item) {
+                                    stack.shrink(item.count)
+
+                                    val itemEntity = droppedItems[i]
+                                    val itemPos = itemEntity.position()
+                                    itemEntity.kill()
+
+                                    level.addFreshEntity(
+                                        ItemEntity(
+                                            level, itemPos.x, itemPos.y, itemPos.z, stack
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

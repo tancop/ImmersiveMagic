@@ -6,21 +6,32 @@ import net.minecraft.core.Holder
 import net.minecraft.core.HolderLookup
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
+import net.neoforged.neoforge.common.util.RecipeMatcher
 
 class SacrificeRecipe(
     val entity: Holder<EntityType<*>>,
     val xpCost: Int,
     val result: ItemStack,
+    val items: List<Ingredient>? = null
 ) :
     Recipe<SacrificeRecipeInput>, MaybeSerializable {
     override fun matches(
         input: SacrificeRecipeInput,
         level: Level
-    ): Boolean = input.entity.type == entity.value() && input.player.totalExperience >= xpCost
+    ): Boolean =
+        input.entity.type == entity.value() && input.player.totalExperience >= xpCost && itemsMatch(input.items)
+
+    fun itemsMatch(stacks: List<ItemStack>): Boolean {
+        if (items == null) return true
+        val matches = RecipeMatcher.findMatches(stacks, items)
+
+        return matches != null
+    }
 
     override fun assemble(input: SacrificeRecipeInput, registries: HolderLookup.Provider): ItemStack = result.copy()
 
