@@ -1,5 +1,6 @@
 package dev.tancop.immersivemagic
 
+import dev.tancop.immersivemagic.recipes.SacrificeRecipe
 import dev.tancop.immersivemagic.recipes.SacrificeRecipeInput
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.EntityType
@@ -7,12 +8,12 @@ import net.minecraft.world.entity.LightningBolt
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.neoforged.neoforge.common.util.RecipeMatcher
-import kotlin.jvm.optionals.getOrNull
 
 object SacrificeMechanics {
     fun handleEntityDeath(level: Level, pos: BlockPos, deadEntity: LivingEntity, player: Player) {
@@ -24,77 +25,120 @@ object SacrificeMechanics {
             null
         }
 
-        if (corePos != null) {
-            val start = corePos.above().north().west()
-            val end = corePos.above().south().east()
+        if (corePos == null) return
 
-            val area = AABB(
-                Vec3(start.x.toDouble(), start.y - 0.5, start.z.toDouble()),
-                Vec3(end.x + 1.0, end.y + 1.0, end.z + 1.0)
-            )
+        val start = corePos.above().north().west()
+        val end = corePos.above().south().east()
 
-            @Suppress("UNCHECKED_CAST") // all returned entities are items
-            val droppedItems = level.getEntities(null, area) {
-                it.type == EntityType.ITEM
-            } as List<ItemEntity>
+        val area = AABB(
+            Vec3(start.x.toDouble(), start.y - 0.5, start.z.toDouble()),
+            Vec3(end.x + 1.0, end.y + 1.0, end.z + 1.0)
+        )
 
-            val stacks = droppedItems.map { it.item }
+        @Suppress("UNCHECKED_CAST") // all returned entities are items
+        val droppedItems = level.getEntities(null, area) {
+            it.type == EntityType.ITEM
+        } as List<ItemEntity>
 
-            val recipes = level.recipeManager
-            val input = SacrificeRecipeInput(player, deadEntity, stacks)
+        val stacks = droppedItems.map { it.item }
 
-            val recipe = recipes.getRecipeFor(ImmersiveMagic.SACRIFICE.get(), input, level)
-                .getOrNull()?.value
+        val matchResult = tryGetMatchingRecipe(level, player, deadEntity, stacks, droppedItems)
 
-            if (recipe != null) {
-                val result = recipe.result
+        val recipe = matchResult?.recipe
+        if (recipe == null) return
 
-                val spawnPos = corePos.above()
-                (0..3).forEach { _ ->
-                    level.addFreshEntity(LightningBolt(EntityType.LIGHTNING_BOLT, level).apply {
-                        setVisualOnly(true)
-                        setPos(
-                            spawnPos.center
-                        )
-                    })
-                }
+        val result = recipe.result
 
-                level.addFreshEntity(
-                    ItemEntity(
-                        level, spawnPos.x.toDouble(),
-                        spawnPos.y.toDouble(), spawnPos.z.toDouble(), result.copy()
-                    )
+        val spawnPos = corePos.above()
+        (0..3).forEach { _ ->
+            level.addFreshEntity(LightningBolt(EntityType.LIGHTNING_BOLT, level).apply {
+                setVisualOnly(true)
+                setPos(
+                    spawnPos.center
                 )
+            })
+        }
 
-                player.giveExperiencePoints(-recipe.xpCost)
+        level.addFreshEntity(
+            ItemEntity(
+                level, spawnPos.x.toDouble(),
+                spawnPos.y.toDouble(), spawnPos.z.toDouble(), result.copy()
+            )
+        )
 
-                if (recipe.items != null) {
-                    RecipeMatcher.findMatches(stacks, recipe.items)?.let { matches ->
-                        for (i in 0..<matches.size) {
-                            val match = matches[i]
-                            val ingredient = recipe.items[match]
-                            val stack = stacks[i]
+        player.giveExperiencePoints(-recipe.xpCost)
 
-                            for (item in ingredient.items) {
-                                if (item.item == stack.item) {
-                                    stack.shrink(item.count)
+        if (recipe.items == null) return
 
-                                    val itemEntity = droppedItems[i]
-                                    val itemPos = itemEntity.position()
-                                    itemEntity.kill()
+        val matches = RecipeMatcher.findMatches(matchResult.stacks, recipe.items) ?: return
+        shrinkStacks(recipe, matchResult.stacks, matches, matchResult.droppedItems, level)
+    }
 
-                                    level.addFreshEntity(
-                                        ItemEntity(
-                                            level, itemPos.x, itemPos.y, itemPos.z, stack
-                                        )
-                                    )
-                                }
-                            }
+    fun shrinkStacks(
+        recipe: SacrificeRecipe,
+        stacks: List<ItemStack>,
+        matches: IntArray,
+        droppedItems: List<ItemEntity>,
+        level: Level
+    ) {
+        if (recipe.items == null) return
+
+        for (i in 0..<matches.size) {
+            val match = matches[i]
+            val ingredient = recipe.items[match]
+            val stack = stacks[i]
+
+            for (item in ingredient.items) {
+                if (item.item == stack.item) {
+                    stack.shrink(item.count)
+
+                    val itemEntity = droppedItems[i]
+                    val itemPos = itemEntity.position()
+                    val yRotate = itemEntity.yRot
+                    itemEntity.kill()
+
+                    level.addFreshEntity(
+                        ItemEntity(
+                            level, itemPos.x, itemPos.y, itemPos.z, stack, 0.0, 0.0, 0.0
+                        ).apply {
+                            yRot = yRotate
                         }
-                    }
+                    )
                 }
             }
         }
+    }
+
+    class MatchResult(val recipe: SacrificeRecipe, val stacks: List<ItemStack>, val droppedItems: List<ItemEntity>)
+
+    fun tryGetMatchingRecipe(
+        level: Level,
+        player: Player,
+        deadEntity: LivingEntity,
+        stacks: List<ItemStack>,
+        droppedItems: List<ItemEntity>
+    ): MatchResult? {
+        val recipes = level.recipeManager
+
+        for (holder in recipes.getAllRecipesFor(ImmersiveMagic.SACRIFICE.get())) {
+            val recipe = holder.value
+            // Ignore unrelated items and pass an empty list if the recipe doesn't need any
+            val filteredStacks = stacks.filter { stack -> recipe.items?.any { it.test(stack) } ?: false }
+            val filteredEntities =
+                droppedItems.filterIndexed { idx, _ -> recipe.items?.any { it.test(stacks[idx]) } ?: false }
+
+            val input = SacrificeRecipeInput(
+                player,
+                deadEntity,
+                filteredStacks
+            )
+
+            if (recipe.matches(input, level)) {
+                return MatchResult(recipe, filteredStacks, filteredEntities)
+            }
+        }
+
+        return null
     }
 
     // Finds all possible cores around a slab

@@ -37,6 +37,6 @@ where `G` is a gold block and `X` is a top-half polished diorite slab. When you 
 right type on top of the altar, lightning strikes on the gold block and you receive the drops. Some sacrifices cost XP
 and can't be performed if you have less than the required amount.
 
-Some recipes need specific items dropped on the altar so the sacrifice can transform them - for example turning an iron
-ingot into gold by killing a pig. You can use bigger stacks instead of the exact amount, but any extra items on the
-altar will make the recipe fail.
+Some recipes need specific items dropped on the altar so the sacrifice can transform them, like turning an iron
+ingot into gold by killing a pig. You should only drop one stack for every type of item, but bigger stacks or extra
+unrelated items are fine.
