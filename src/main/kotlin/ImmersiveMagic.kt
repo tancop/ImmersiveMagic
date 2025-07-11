@@ -1,10 +1,14 @@
 package dev.tancop.immersivemagic
 
 import dev.tancop.immersivemagic.recipes.*
+import dev.tancop.immersivemagic.spells.FireballSpellComponent
+import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.registries.Registries
+import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.tags.TagKey
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.crafting.RecipeSerializer
@@ -35,14 +39,25 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         BLOCK_ENTITY_TYPES.register(modEventBus)
         RECIPE_TYPES.register(modEventBus)
         RECIPE_SERIALIZERS.register(modEventBus)
+        DATA_COMPONENT_TYPES.register(modEventBus)
 
-        fun onRightClick(event: PlayerInteractEvent.RightClickBlock) {
+        fun onRightClickBlock(event: PlayerInteractEvent.RightClickBlock) {
             if (event.level.isClientSide) return
 
             val state = event.level.getBlockState(event.pos)
             if (state.`is`(Blocks.WATER_CAULDRON) && event.entity.isCrouching) {
                 // Sneaking normally disables interactions but we want to use it for dipping
                 event.useBlock = TriState.TRUE
+            }
+
+            val heldItem = event.entity.getItemInHand(event.hand)
+
+            if (heldItem.has(FIREBALL_SPELL)) {
+                val result = heldItem.get(FIREBALL_SPELL)!!.castOnBlock(event)
+                if (result == InteractionResult.SUCCESS) {
+                    event.cancellationResult = InteractionResult.SUCCESS
+                    return
+                }
             }
         }
 
@@ -60,7 +75,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             }
         }
 
-        NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClick(it) }
+        NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClickBlock(it) }
         NeoForge.EVENT_BUS.addListener<LivingDeathEvent> { onLivingDeath(it) }
         modEventBus.addListener<GatherDataEvent> { gatherData(it) }
 
@@ -124,6 +139,16 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         val SACRIFICE_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SacrificeRecipeSerializer> =
             RECIPE_SERIALIZERS.register("sacrifice", Supplier { SacrificeRecipeSerializer() })
+
+        val DATA_COMPONENT_TYPES: DeferredRegister.DataComponents =
+            DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID)
+
+        val FIREBALL_SPELL: DeferredHolder<DataComponentType<*>, DataComponentType<FireballSpellComponent>> =
+            DATA_COMPONENT_TYPES.registerComponentType("fireball_spell") { builder ->
+                builder
+                    .persistent(FireballSpellComponent.CODEC.codec())
+                    .networkSynchronized(StreamCodec.unit(FireballSpellComponent(3)))
+            }
 
         fun gatherData(event: GatherDataEvent) {
             val generator = event.generator

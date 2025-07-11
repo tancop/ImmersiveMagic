@@ -1,0 +1,20 @@
+{
+  "type": "immersivemagic:sacrifice",
+  "entity": "minecraft:blaze",
+  "items": [
+    {
+      "item": "minecraft:paper"
+    }
+  ],
+  "xp_cost": 15,
+  "result": {
+    "count": 1,
+    "id": "minecraft:paper",
+    "components": {
+      "immersivemagic:fireball_spell": {
+        "charges": 3,
+        "max_charges": 3
+      }
+    }
+  }
+}
