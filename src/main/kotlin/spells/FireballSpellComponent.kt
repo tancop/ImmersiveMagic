@@ -5,15 +5,17 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.entity.projectile.SmallFireball
+import net.minecraft.world.entity.projectile.LargeFireball
 import net.minecraft.world.level.Level
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 
-data class FireballSpellComponent(override val charges: Int, val maxCharges: Int = 3) : SpellComponent() {
+data class FireballSpellComponent(override val charges: Int, override val maxCharges: Int) : SpellComponent() {
     fun cast(player: Player, level: Level): InteractionResult {
         val lookAngle = player.lookAngle
 
-        val fireball = SmallFireball(level, player, lookAngle)
+        val fireball = LargeFireball(level, player, lookAngle, 1).apply {
+            setPos(player.eyePosition)
+        }
         level.addFreshEntity(fireball)
 
         return InteractionResult.SUCCESS
@@ -24,12 +26,14 @@ data class FireballSpellComponent(override val charges: Int, val maxCharges: Int
     }
 
     override fun castOnBlock(event: PlayerInteractEvent.RightClickBlock): InteractionResult {
-        return cast(event.entity, event.level)
+        return InteractionResult.PASS
     }
 
     override fun castOnEntity(event: PlayerInteractEvent.EntityInteractSpecific): InteractionResult {
-        return cast(event.entity, event.level)
+        return InteractionResult.PASS
     }
+
+    override fun withLowerCharge(): SpellComponent = FireballSpellComponent(charges - 1, maxCharges)
 
     companion object {
         val CODEC: MapCodec<FireballSpellComponent?> = RecordCodecBuilder.mapCodec { instance ->

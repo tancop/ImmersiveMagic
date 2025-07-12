@@ -2,9 +2,10 @@ package dev.tancop.immersivemagic
 
 import dev.tancop.immersivemagic.recipes.*
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
+import dev.tancop.immersivemagic.spells.SpellComponent
 import net.minecraft.core.component.DataComponentType
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.tags.TagKey
@@ -52,11 +53,72 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
             val heldItem = event.entity.getItemInHand(event.hand)
 
-            if (heldItem.has(FIREBALL_SPELL)) {
-                val result = heldItem.get(FIREBALL_SPELL)!!.castOnBlock(event)
-                if (result == InteractionResult.SUCCESS) {
-                    event.cancellationResult = InteractionResult.SUCCESS
-                    return
+            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
+            if (entry != null) {
+                val component = entry.value as SpellComponent
+                println("[block] old charge: ${component.charges}")
+                if (component.charges > 0) {
+                    val result = component.castOnBlock(event)
+                    if (result == InteractionResult.SUCCESS) {
+                        val newComponent = component.withLowerCharge()
+                        println("[block] new charge: ${newComponent.charges}")
+
+                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
+                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
+                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
+
+                        event.useBlock = TriState.FALSE
+                        event.useItem = TriState.FALSE
+                        return
+                    }
+                }
+            }
+        }
+
+        fun onRightClickEntity(event: PlayerInteractEvent.EntityInteractSpecific) {
+            if (event.level.isClientSide) return
+
+            val heldItem = event.entity.getItemInHand(event.hand)
+
+            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
+            if (entry != null) {
+                val component = entry.value as SpellComponent
+                println("[entity] old charge: ${component.charges}")
+                if (component.charges > 0) {
+                    val result = component.castOnEntity(event)
+                    if (result == InteractionResult.SUCCESS) {
+                        val newComponent = component.withLowerCharge()
+                        println("[entity] new charge: ${newComponent.charges}")
+
+                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
+                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
+                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
+                        return
+                    }
+                }
+            }
+        }
+
+        fun onRightClickItem(event: PlayerInteractEvent.RightClickItem) {
+            if (event.level.isClientSide) return
+
+            val heldItem = event.entity.getItemInHand(event.hand)
+
+            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
+            if (entry != null) {
+                val component = entry.value as SpellComponent
+                println("[item] old charge: ${component.charges}")
+                if (component.charges > 0) {
+                    val result = component.cast(event)
+                    if (result == InteractionResult.SUCCESS) {
+                        val newComponent = component.withLowerCharge()
+                        println("[item] new charge: ${newComponent.charges}")
+
+                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
+                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
+                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
+                        return
+                    }
                 }
             }
         }
@@ -77,6 +139,10 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClickBlock(it) }
         NeoForge.EVENT_BUS.addListener<LivingDeathEvent> { onLivingDeath(it) }
+
+        NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.EntityInteractSpecific> { onRightClickEntity(it) }
+        NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickItem> { onRightClickItem(it) }
+
         modEventBus.addListener<GatherDataEvent> { gatherData(it) }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
@@ -147,7 +213,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             DATA_COMPONENT_TYPES.registerComponentType("fireball_spell") { builder ->
                 builder
                     .persistent(FireballSpellComponent.CODEC.codec())
-                    .networkSynchronized(StreamCodec.unit(FireballSpellComponent(3)))
+                    .networkSynchronized(EmptyStreamCodec(FireballSpellComponent(3, 3)))
             }
 
         fun gatherData(event: GatherDataEvent) {

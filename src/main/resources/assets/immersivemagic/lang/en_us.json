@@ -1,3 +1,4 @@
 {
-  "config.immersivemagic.disable_vanilla_brewing": "Disable Vanilla Brewing Recipes"
+  "config.immersivemagic.disable_vanilla_brewing": "Disable Vanilla Brewing Recipes",
+  "ui.immersivemagic.spell_charges": "charges"
 }
