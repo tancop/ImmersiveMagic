@@ -19,8 +19,9 @@ abstract class SpellComponent {
 
     fun getItemLore(): ItemLore = ItemLore(
         listOf(
-            Component.literal("${charges}/${maxCharges} "),
-            Component.translatable("ui.immersivemagic.spell_charges")
+            Component.literal("${charges}/${maxCharges} ").append(
+                Component.translatable("ui.immersivemagic.spell_charges")
+            ),
         )
     )
 }
