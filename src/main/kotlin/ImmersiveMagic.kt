@@ -3,6 +3,7 @@ package dev.tancop.immersivemagic
 import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
 import dev.tancop.immersivemagic.recipes.*
+import dev.tancop.immersivemagic.spells.EvokerFangsSpellComponent
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
 import dev.tancop.immersivemagic.spells.SpellComponent
 import net.minecraft.core.Registry
@@ -151,6 +152,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             val source = event.source
             val killer = source.entity
             if (killer != null && killer.type == (EntityType.PLAYER)) {
+                println("killed entity: $entity")
                 SacrificeMechanics.handleEntityDeath(level, pos, entity, killer as Player)
             }
         }
@@ -247,8 +249,17 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                     .networkSynchronized(EmptyStreamCodec(FireballSpellComponent(0, 3)))
             }
 
+        @Suppress("unused")
+        val EVOKER_FANGS_SPELL: DeferredHolder<DataComponentType<*>, DataComponentType<EvokerFangsSpellComponent>> =
+            DATA_COMPONENT_TYPES.registerComponentType("evoker_fangs_spell") { builder ->
+                builder
+                    .persistent(EvokerFangsSpellComponent.CODEC.codec())
+                    .networkSynchronized(EmptyStreamCodec(EvokerFangsSpellComponent(0, 3)))
+            }
+
         init {
             SPELL_COMPONENTS.register("fireball_spell", Supplier { })
+            SPELL_COMPONENTS.register("evoker_fangs_spell", Supplier { })
         }
 
         fun gatherData(event: GatherDataEvent) {

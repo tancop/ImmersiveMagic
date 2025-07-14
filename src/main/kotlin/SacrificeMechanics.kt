@@ -19,13 +19,13 @@ object SacrificeMechanics {
     fun handleEntityDeath(level: Level, pos: BlockPos, deadEntity: LivingEntity, player: Player) {
         val corePos = if (level.getBlockState(pos).`is`(Blocks.GOLD_BLOCK)) {
             pos.takeIf { isValidAltarCore(level, pos) }
-        } else if (level.getBlockState(pos).`is`(Blocks.POLISHED_DIORITE_SLAB)) {
-            findPossibleCores(level, pos).firstOrNull { isValidAltarCore(level, it) }
         } else {
-            null
+            findPossibleCores(level, pos).firstOrNull { isValidAltarCore(level, it) }
         }
 
         if (corePos == null) return
+
+        println("found core")
 
         val start = corePos.above().north().west()
         val end = corePos.above().south().east()
@@ -41,6 +41,8 @@ object SacrificeMechanics {
         } as List<ItemEntity>
 
         val stacks = droppedItems.map { it.item }
+
+        println("getting recipe")
 
         val matchResult = tryGetMatchingRecipe(level, player, deadEntity, stacks, droppedItems)
 
@@ -121,6 +123,7 @@ object SacrificeMechanics {
         val recipes = level.recipeManager
 
         for (holder in recipes.getAllRecipesFor(ImmersiveMagic.SACRIFICE.get())) {
+            println("checking recipe ${holder.id}")
             val recipe = holder.value
             // Ignore unrelated items and pass an empty list if the recipe doesn't need any
             val filteredStacks = stacks.filter { stack -> recipe.items?.any { it.test(stack) } ?: false }
@@ -146,9 +149,11 @@ object SacrificeMechanics {
         val cores = mutableSetOf<BlockPos>()
         for (x in -1..1) {
             for (y in -1..1) {
-                val checkPos = pos.east(x).north(y)
-                if (level.getBlockState(checkPos).`is`(Blocks.GOLD_BLOCK)) {
-                    cores.add(checkPos)
+                for (z in -2..0) {
+                    val checkPos = pos.east(x).north(y).above(z)
+                    if (level.getBlockState(checkPos).`is`(Blocks.GOLD_BLOCK)) {
+                        cores.add(checkPos)
+                    }
                 }
             }
         }
