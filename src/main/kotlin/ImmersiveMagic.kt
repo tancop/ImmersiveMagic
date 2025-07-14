@@ -1,17 +1,26 @@
 package dev.tancop.immersivemagic
 
+import com.google.gson.JsonParser
+import com.mojang.serialization.JsonOps
 import dev.tancop.immersivemagic.recipes.*
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
 import dev.tancop.immersivemagic.spells.SpellComponent
+import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.StringTag
+import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.tags.TagKey
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.Block
@@ -28,7 +37,10 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
+import net.neoforged.neoforge.registries.NewRegistryEvent
+import net.neoforged.neoforge.registries.RegistryBuilder
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrNull
 
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -41,6 +53,66 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         RECIPE_TYPES.register(modEventBus)
         RECIPE_SERIALIZERS.register(modEventBus)
         DATA_COMPONENT_TYPES.register(modEventBus)
+        SPELL_COMPONENTS.register(modEventBus)
+
+
+        fun <T : PlayerInteractEvent> handleSpellCast(
+            event: T,
+            castFunction: SpellComponent.(T) -> InteractionResult,
+            onSuccess: (T) -> Unit
+        ) {
+            val heldItem = event.entity.getItemInHand(event.hand)
+
+            val entry = heldItem.get(DataComponents.CUSTOM_DATA)
+            if (entry != null) {
+                val compoundTag = entry.copyTag() ?: CompoundTag()
+
+                val key = compoundTag.allKeys
+                    .firstOrNull { SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) }
+                if (key == null) return
+
+                val resourceLocation = ResourceLocation.parse(key)
+
+                val codec = BuiltInRegistries.DATA_COMPONENT_TYPE.get(resourceLocation)?.codec()
+                if (codec == null) return
+
+                val tag = compoundTag.get(key)
+
+                val component = codec.decode(NbtOps.INSTANCE, tag).result().getOrNull()?.first
+                    ?: if (tag is StringTag) {
+                        // Might be JSON like when reading from a recipe
+                        codec.decode(
+                            JsonOps.INSTANCE,
+                            JsonParser.parseString(tag.asString)
+                        ).result().getOrNull()?.first
+                    } else {
+                        null
+                    }
+
+                if (component is SpellComponent) {
+                    if (component.charges > 0) {
+                        val result = component.castFunction(event)
+                        if (result == InteractionResult.SUCCESS) {
+                            val newComponent = component.withLowerCharge()
+
+                            val tag = newComponent.encodeNbt()
+                            // preserve other "fake" components if any
+                            if (tag != null) {
+                                compoundTag.put(key, tag)
+                            } else {
+                                compoundTag.remove(key)
+                            }
+
+                            heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag))
+                            heldItem.set(DataComponents.LORE, newComponent.getItemLore())
+
+                            onSuccess(event)
+                            return
+                        }
+                    }
+                }
+            }
+        }
 
         fun onRightClickBlock(event: PlayerInteractEvent.RightClickBlock) {
             if (event.level.isClientSide) return
@@ -51,76 +123,22 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 event.useBlock = TriState.TRUE
             }
 
-            val heldItem = event.entity.getItemInHand(event.hand)
-
-            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
-            if (entry != null) {
-                val component = entry.value as SpellComponent
-                println("[block] old charge: ${component.charges}")
-                if (component.charges > 0) {
-                    val result = component.castOnBlock(event)
-                    if (result == InteractionResult.SUCCESS) {
-                        val newComponent = component.withLowerCharge()
-                        println("[block] new charge: ${newComponent.charges}")
-
-                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
-                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
-                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
-
-                        event.useBlock = TriState.FALSE
-                        event.useItem = TriState.FALSE
-                        return
-                    }
-                }
+            handleSpellCast(event, SpellComponent::castOnBlock) {
+                it.useBlock = TriState.FALSE
+                it.useItem = TriState.FALSE
             }
         }
 
         fun onRightClickEntity(event: PlayerInteractEvent.EntityInteractSpecific) {
             if (event.level.isClientSide) return
 
-            val heldItem = event.entity.getItemInHand(event.hand)
-
-            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
-            if (entry != null) {
-                val component = entry.value as SpellComponent
-                println("[entity] old charge: ${component.charges}")
-                if (component.charges > 0) {
-                    val result = component.castOnEntity(event)
-                    if (result == InteractionResult.SUCCESS) {
-                        val newComponent = component.withLowerCharge()
-                        println("[entity] new charge: ${newComponent.charges}")
-
-                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
-                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
-                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
-                        return
-                    }
-                }
-            }
+            handleSpellCast(event, SpellComponent::castOnEntity) {}
         }
 
         fun onRightClickItem(event: PlayerInteractEvent.RightClickItem) {
             if (event.level.isClientSide) return
 
-            val heldItem = event.entity.getItemInHand(event.hand)
-
-            val entry = heldItem.components.firstOrNull { it.value is SpellComponent }
-            if (entry != null) {
-                val component = entry.value as SpellComponent
-                println("[item] old charge: ${component.charges}")
-                if (component.charges > 0) {
-                    val result = component.cast(event)
-                    if (result == InteractionResult.SUCCESS) {
-                        val newComponent = component.withLowerCharge()
-                        println("[item] new charge: ${newComponent.charges}")
-
-                        @Suppress("UNCHECKED_CAST") // already checked with `firstOrNull`
-                        heldItem.set(entry.type as DataComponentType<SpellComponent>, newComponent)
-                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
-                        return
-                    }
-                }
-            }
+            handleSpellCast(event, SpellComponent::cast) {}
         }
 
         fun onLivingDeath(event: LivingDeathEvent) {
@@ -144,6 +162,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickItem> { onRightClickItem(it) }
 
         modEventBus.addListener<GatherDataEvent> { gatherData(it) }
+        modEventBus.addListener<NewRegistryEvent> { event ->
+            event.register(SPELL_COMPONENTS_REGISTRY)
+        }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
     }
@@ -206,15 +227,29 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         val SACRIFICE_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SacrificeRecipeSerializer> =
             RECIPE_SERIALIZERS.register("sacrifice", Supplier { SacrificeRecipeSerializer() })
 
+        val SPELL_COMPONENTS_REGISTRY_KEY: ResourceKey<Registry<Unit>> =
+            ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "spell_components"))
+
+        val SPELL_COMPONENTS_REGISTRY: Registry<Unit> = RegistryBuilder(SPELL_COMPONENTS_REGISTRY_KEY)
+            .create()
+
+        val SPELL_COMPONENTS: DeferredRegister<Unit> =
+            DeferredRegister.create(SPELL_COMPONENTS_REGISTRY_KEY, MOD_ID)
+
         val DATA_COMPONENT_TYPES: DeferredRegister.DataComponents =
             DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID)
 
+        @Suppress("unused") // registered and might be used later
         val FIREBALL_SPELL: DeferredHolder<DataComponentType<*>, DataComponentType<FireballSpellComponent>> =
             DATA_COMPONENT_TYPES.registerComponentType("fireball_spell") { builder ->
                 builder
                     .persistent(FireballSpellComponent.CODEC.codec())
-                    .networkSynchronized(EmptyStreamCodec(FireballSpellComponent(3, 3)))
+                    .networkSynchronized(EmptyStreamCodec(FireballSpellComponent(0, 3)))
             }
+
+        init {
+            SPELL_COMPONENTS.register("fireball_spell", Supplier { })
+        }
 
         fun gatherData(event: GatherDataEvent) {
             val generator = event.generator

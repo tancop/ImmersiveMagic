@@ -11,9 +11,11 @@
     "count": 1,
     "id": "minecraft:paper",
     "components": {
-      "immersivemagic:fireball_spell": {
-        "charges": 3,
-        "max_charges": 3
+      "minecraft:custom_data": {
+        "immersivemagic:fireball_spell": {
+          "charges": 3,
+          "max_charges": 3
+        }
       },
       "minecraft:item_name": "Fireball",
       "minecraft:lore": [

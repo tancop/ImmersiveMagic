@@ -3,14 +3,18 @@ package dev.tancop.immersivemagic.spells
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.Tag
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.LargeFireball
-import net.minecraft.world.level.Level
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
+import kotlin.jvm.optionals.getOrNull
 
 data class FireballSpellComponent(override val charges: Int, override val maxCharges: Int) : SpellComponent() {
-    fun cast(player: Player, level: Level): InteractionResult {
+    override fun cast(event: PlayerInteractEvent.RightClickItem): InteractionResult {
+        val player = event.entity
+        val level = event.level
+
         val lookAngle = player.lookAngle
 
         val fireball = LargeFireball(level, player, lookAngle, 1).apply {
@@ -21,22 +25,13 @@ data class FireballSpellComponent(override val charges: Int, override val maxCha
         return InteractionResult.SUCCESS
     }
 
-    override fun cast(event: PlayerInteractEvent.RightClickItem): InteractionResult {
-        return cast(event.entity, event.level)
-    }
-
-    override fun castOnBlock(event: PlayerInteractEvent.RightClickBlock): InteractionResult {
-        return InteractionResult.PASS
-    }
-
-    override fun castOnEntity(event: PlayerInteractEvent.EntityInteractSpecific): InteractionResult {
-        return InteractionResult.PASS
-    }
-
     override fun withLowerCharge(): SpellComponent = FireballSpellComponent(charges - 1, maxCharges)
 
+    override fun encodeNbt(): Tag? =
+        CODEC.codec().encodeStart(NbtOps.INSTANCE, this).result().getOrNull()
+
     companion object {
-        val CODEC: MapCodec<FireballSpellComponent?> = RecordCodecBuilder.mapCodec { instance ->
+        val CODEC: MapCodec<FireballSpellComponent> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 Codec.INT.fieldOf("charges").forGetter(FireballSpellComponent::charges),
                 Codec.INT.fieldOf("max_charges").forGetter(FireballSpellComponent::maxCharges),
