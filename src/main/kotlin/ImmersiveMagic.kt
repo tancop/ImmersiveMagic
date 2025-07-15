@@ -1,7 +1,5 @@
 package dev.tancop.immersivemagic
 
-import com.google.gson.JsonParser
-import com.mojang.serialization.JsonOps
 import dev.tancop.immersivemagic.recipes.*
 import dev.tancop.immersivemagic.spells.EvokerFangsSpellComponent
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
@@ -11,9 +9,6 @@ import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.NbtOps
-import net.minecraft.nbt.StringTag
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
@@ -41,14 +36,10 @@ import net.neoforged.neoforge.registries.DeferredRegister
 import net.neoforged.neoforge.registries.NewRegistryEvent
 import net.neoforged.neoforge.registries.RegistryBuilder
 import java.util.function.Supplier
-import kotlin.jvm.optionals.getOrNull
 
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ImmersiveMagic.Companion.MOD_ID)
 class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
-    // The constructor for the mod class is the first code run when your mod is loaded.
-    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     init {
         BLOCK_ENTITY_TYPES.register(modEventBus)
         RECIPE_TYPES.register(modEventBus)
@@ -64,52 +55,29 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         ) {
             val heldItem = event.entity.getItemInHand(event.hand)
 
-            val entry = heldItem.get(DataComponents.CUSTOM_DATA)
-            if (entry != null) {
-                val compoundTag = entry.copyTag() ?: CompoundTag()
+            val map = ServerComponentMap.fromStack(heldItem) ?: return
 
-                val key = compoundTag.allKeys
-                    .firstOrNull { SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) }
-                if (key == null) return
+            val key = map.allKeys
+                .firstOrNull { SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) } ?: return
+            val resourceLocation = ResourceLocation.parse(key)
 
-                val resourceLocation = ResourceLocation.parse(key)
+            val componentType = BuiltInRegistries.DATA_COMPONENT_TYPE.get(resourceLocation) ?: return
+            val component = map.get(componentType)
 
-                val codec = BuiltInRegistries.DATA_COMPONENT_TYPE.get(resourceLocation)?.codec()
-                if (codec == null) return
+            if (component is SpellComponent) {
+                if (component.charges > 0) {
+                    val result = component.castFunction(event)
+                    if (result == InteractionResult.SUCCESS) {
+                        val newComponent = component.withLowerCharge()
 
-                val tag = compoundTag.get(key)
+                        @Suppress("UNCHECKED_CAST") // We already checked the component's type
+                        map.set(componentType as DataComponentType<SpellComponent>, newComponent)
 
-                val component = codec.decode(NbtOps.INSTANCE, tag).result().getOrNull()?.first
-                    ?: if (tag is StringTag) {
-                        // Might be JSON like when reading from a recipe
-                        codec.decode(
-                            JsonOps.INSTANCE,
-                            JsonParser.parseString(tag.asString)
-                        ).result().getOrNull()?.first
-                    } else {
-                        null
-                    }
+                        heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(map.encode()))
+                        heldItem.set(DataComponents.LORE, newComponent.getItemLore())
 
-                if (component is SpellComponent) {
-                    if (component.charges > 0) {
-                        val result = component.castFunction(event)
-                        if (result == InteractionResult.SUCCESS) {
-                            val newComponent = component.withLowerCharge()
-
-                            val tag = newComponent.encodeNbt()
-                            // preserve other "fake" components if any
-                            if (tag != null) {
-                                compoundTag.put(key, tag)
-                            } else {
-                                compoundTag.remove(key)
-                            }
-
-                            heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag))
-                            heldItem.set(DataComponents.LORE, newComponent.getItemLore())
-
-                            onSuccess(event)
-                            return
-                        }
+                        onSuccess(event)
+                        return
                     }
                 }
             }
@@ -152,7 +120,6 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             val source = event.source
             val killer = source.entity
             if (killer != null && killer.type == (EntityType.PLAYER)) {
-                println("killed entity: $entity")
                 SacrificeMechanics.handleEntityDeath(level, pos, entity, killer as Player)
             }
         }

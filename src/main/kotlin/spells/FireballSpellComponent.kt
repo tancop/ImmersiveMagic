@@ -3,12 +3,9 @@ package dev.tancop.immersivemagic.spells
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import net.minecraft.nbt.NbtOps
-import net.minecraft.nbt.Tag
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.projectile.LargeFireball
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import kotlin.jvm.optionals.getOrNull
 
 data class FireballSpellComponent(override val charges: Int, override val maxCharges: Int) : SpellComponent() {
     override fun cast(event: PlayerInteractEvent.RightClickItem): InteractionResult {
@@ -26,9 +23,6 @@ data class FireballSpellComponent(override val charges: Int, override val maxCha
     }
 
     override fun withLowerCharge(): SpellComponent = FireballSpellComponent(charges - 1, maxCharges)
-
-    override fun encodeNbt(): Tag? =
-        CODEC.codec().encodeStart(NbtOps.INSTANCE, this).result().getOrNull()
 
     companion object {
         val CODEC: MapCodec<FireballSpellComponent> = RecordCodecBuilder.mapCodec { instance ->

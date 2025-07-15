@@ -3,13 +3,10 @@ package dev.tancop.immersivemagic.spells
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import net.minecraft.nbt.NbtOps
-import net.minecraft.nbt.Tag
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.projectile.EvokerFangs
 import net.minecraft.world.phys.Vec3
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import kotlin.jvm.optionals.getOrNull
 
 data class EvokerFangsSpellComponent(override val charges: Int, override val maxCharges: Int) : SpellComponent() {
     override fun cast(event: PlayerInteractEvent.RightClickItem): InteractionResult {
@@ -34,9 +31,6 @@ data class EvokerFangsSpellComponent(override val charges: Int, override val max
     }
 
     override fun withLowerCharge(): SpellComponent = EvokerFangsSpellComponent(charges - 1, maxCharges)
-
-    override fun encodeNbt(): Tag? =
-        CODEC.codec().encodeStart(NbtOps.INSTANCE, this).result().getOrNull()
 
     companion object {
         const val OFFSET = 1.0

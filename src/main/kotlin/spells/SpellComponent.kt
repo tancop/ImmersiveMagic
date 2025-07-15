@@ -1,6 +1,5 @@
 package dev.tancop.immersivemagic.spells
 
-import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.component.ItemLore
@@ -14,8 +13,6 @@ abstract class SpellComponent {
     abstract val charges: Int
     abstract val maxCharges: Int
     abstract fun withLowerCharge(): SpellComponent
-
-    abstract fun encodeNbt(): Tag?
 
     fun getItemLore(): ItemLore = ItemLore(
         listOf(
