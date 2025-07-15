@@ -3,6 +3,7 @@ package dev.tancop.immersivemagic.spells
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import net.minecraft.util.Mth
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.projectile.EvokerFangs
 import net.minecraft.world.phys.Vec3
@@ -22,7 +23,7 @@ data class EvokerFangsSpellComponent(override val charges: Int, override val max
                 EvokerFangs(
                     level,
                     fangPos.x, fangPos.y, fangPos.z,
-                    0.0F, SPAWN_DELAY * i, player
+                    Mth.atan2(direction.z, direction.x).toFloat(), SPAWN_DELAY_TICKS * i, player
                 )
             )
         }
@@ -35,7 +36,7 @@ data class EvokerFangsSpellComponent(override val charges: Int, override val max
     companion object {
         const val OFFSET = 1.0
         const val FANG_COUNT = 8
-        const val SPAWN_DELAY = 5
+        const val SPAWN_DELAY_TICKS = 3
 
         val CODEC: MapCodec<EvokerFangsSpellComponent> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
