@@ -18,7 +18,7 @@
         }
       },
       "minecraft:max_stack_size": 1,
-      "minecraft:item_name": "\"Evoker Fangs\"",
+      "minecraft:item_name": "{\"translate\": \"spell.immersivemagic.evoker_fangs\"}",
       "minecraft:lore": [
         "[\"3/3 \", {\"translate\": \"ui.immersivemagic.spell_charges\"}]"
       ],
