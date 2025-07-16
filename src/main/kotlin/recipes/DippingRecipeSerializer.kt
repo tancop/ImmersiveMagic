@@ -19,12 +19,12 @@ class DippingRecipeSerializer : RecipeSerializer<DippingRecipe> {
     companion object {
         val CODEC: MapCodec<DippingRecipe> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                PotionRef.CODEC.fieldOf("potion").forGetter { DataResult.success(it.potion) },
+                PotionRef.CODEC.fieldOf("potion").forGetter { it.potion },
                 Ingredient.CODEC.fieldOf("container").forGetter(DippingRecipe::container),
                 ItemStack.CODEC.fieldOf("result").forGetter(DippingRecipe::result),
             ).apply(instance) { potion, container, result ->
                 DippingRecipe(
-                    potion.getOrThrow { IllegalStateException("Empty potion input in recipe: ${potion.error()}") },
+                    potion ?: throw IllegalStateException("Recipe result is null"),
                     container,
                     result
                 )

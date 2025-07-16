@@ -1,6 +1,5 @@
 package dev.tancop.immersivemagic
 
-import com.mojang.serialization.DataResult
 import dev.tancop.immersivemagic.ImmersiveMagic.Companion.WATER_CAULDRON_BLOCK_ENTITY
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
@@ -40,16 +39,13 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         tag.put("items", listTag)
 
-        val dataResult = if (storedPotion != null) {
-            DataResult.success(storedPotion!!)
-        } else {
-            DataResult.error { "" }
-        }
+        if (storedPotion != null) {
+            val potionTag = PotionRef.CODEC.encodeStart(NbtOps.INSTANCE, storedPotion).result().getOrNull()
 
-        tag.put(
-            "storedPotion",
-            PotionRef.CODEC.encodeStart(NbtOps.INSTANCE, dataResult).result().get()
-        )
+            if (potionTag != null) {
+                tag.put("storedPotion", potionTag)
+            }
+        }
     }
 
     override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
@@ -67,7 +63,7 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
 
         storedPotion =
             PotionRef.CODEC.decode(NbtOps.INSTANCE, potionTag).result().getOrNull()
-                ?.first?.result()?.getOrNull()
+                ?.first
     }
 
     // Server-only block entity, if we send it to clients without this mod installed

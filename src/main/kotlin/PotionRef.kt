@@ -2,7 +2,6 @@ package dev.tancop.immersivemagic
 
 import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
-import com.mojang.serialization.DataResult
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.Holder
 import net.minecraft.core.component.DataComponents
@@ -46,7 +45,8 @@ sealed class PotionRef {
                 ).apply(instance) { potion, type ->
                     GamePotion(
                         BuiltInRegistries.POTION.wrapAsHolder(
-                            BuiltInRegistries.POTION.get(potion)!!
+                            BuiltInRegistries.POTION.get(potion)
+                                ?: throw IllegalArgumentException("Invalid potion: $potion")
                         ),
                         PotionType.valueOf(type)
                     )
@@ -133,32 +133,31 @@ sealed class PotionRef {
         fun of(item: ItemStack, color: Int): PotionRef =
             CustomItem(item, color)
 
-        val CODEC: Codec<DataResult<out PotionRef>> =
+        val CODEC: Codec<PotionRef?> =
             Codec.xor(GamePotion.CODEC, Codec.xor(CustomPotion.CODEC, CustomItem.CODEC)).xmap({ either ->
                 val left = either.left().getOrNull()
                 if (left != null) {
-                    return@xmap DataResult.success(left)
+                    return@xmap left
                 }
                 val right = either.right().getOrNull()
                 if (right != null) {
                     val innerLeft = right.left().getOrNull()
                     if (innerLeft != null) {
-                        return@xmap DataResult.success(innerLeft)
+                        return@xmap innerLeft
                     }
                     val innerRight = right.right().getOrNull()
                     if (innerRight != null) {
-                        return@xmap DataResult.success(innerRight)
+                        return@xmap innerRight
                     }
                 }
-                DataResult.error { "Failed to deserialize PotionRef" }
+                null
             }, { res ->
-                res.mapOrElse({
-                    when (it) {
-                        is GamePotion -> Either.left(it)
-                        is CustomPotion -> Either.right(Either.left(it))
-                        is CustomItem -> Either.right(Either.right(it))
-                    }
-                }, { Either.left(null) })
+                when (res) {
+                    is GamePotion -> Either.left(res)
+                    is CustomPotion -> Either.right(Either.left(res))
+                    is CustomItem -> Either.right(Either.right(res))
+                    else -> null
+                }
             })
     }
 }

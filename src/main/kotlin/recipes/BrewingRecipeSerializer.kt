@@ -1,7 +1,6 @@
 package dev.tancop.immersivemagic.recipes
 
 import com.mojang.serialization.Codec
-import com.mojang.serialization.DataResult
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import dev.tancop.immersivemagic.FireType
@@ -22,12 +21,12 @@ class BrewingRecipeSerializer : RecipeSerializer<BrewingRecipe> {
             instance.group(
                 Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(BrewingRecipe::ingredients),
                 Codec.STRING.fieldOf("fireType").forGetter { it.fireType.name },
-                PotionRef.Companion.CODEC.fieldOf("result").forGetter { DataResult.success(it.result) }
+                PotionRef.CODEC.fieldOf("result").forGetter { it.result }
             ).apply(instance) { items, fireType, result ->
                 BrewingRecipe(
                     items,
                     FireType.valueOf(fireType),
-                    result.getOrThrow { IllegalStateException("Empty result in recipe: ${result.error()}") },
+                    result ?: throw IllegalStateException("Recipe result is null"),
                 )
             }
         }
