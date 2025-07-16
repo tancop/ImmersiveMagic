@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.stats.Stats
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemUtils
@@ -53,13 +54,30 @@ object CauldronHandlers {
                     val recipes = level.recipeManager
 
                     val input = DippingRecipeInput(entity, stack)
-                    val recipe = recipes.getRecipeFor(ImmersiveMagic.DIPPING.get(), input, level)
+                    val recipe = recipes.getRecipeFor(ImmersiveMagic.DIPPING.get(), input, level).getOrNull()?.value
 
-                    val result = recipe.getOrNull()?.value?.result
+                    if (recipe != null) {
+                        val result = recipe.result
 
-                    if (result != null) {
-                        player.inventory.add(result.copy())
-                        LayeredCauldronBlock.lowerFillLevel(state, level, pos)
+                        val resultStack = result.copy()
+                        if (!player.inventory.add(resultStack)) {
+                            // Player inventory is full, we drop the rest on the ground
+                            val itemPos = pos.center
+                            level.addFreshEntity(ItemEntity(level, itemPos.x, itemPos.y + 0.4, itemPos.z, resultStack))
+                        }
+
+                        // Lower fluid level based on recipe's bottlesUsed
+                        val currentLevel = state.getValue(LayeredCauldronBlock.LEVEL)
+                        val newLevel = currentLevel - recipe.bottlesUsed
+
+                        val newState = if (newLevel == 0) {
+                            Blocks.CAULDRON.defaultBlockState()
+                        } else {
+                            state.setValue(LayeredCauldronBlock.LEVEL, newLevel)
+                        }
+
+                        level.setBlockAndUpdate(pos, newState)
+                        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState))
 
                         if (!player.isCreative) stack.shrink(1)
 

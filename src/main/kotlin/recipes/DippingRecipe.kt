@@ -10,17 +10,23 @@ import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.LayeredCauldronBlock
 
 class DippingRecipe(
     val potion: PotionRef,
     val container: Ingredient,
     val result: ItemStack,
+    val bottlesUsed: Int = 1
 ) :
     Recipe<DippingRecipeInput>, MaybeSerializable {
     override fun matches(
         input: DippingRecipeInput,
         level: Level
-    ): Boolean = input.entity.storedPotion?.let { it == potion && container.test(input.container) } ?: false
+    ): Boolean = input.entity.storedPotion?.let {
+        it == potion
+                && container.test(input.container)
+                && input.entity.blockState.getValue(LayeredCauldronBlock.LEVEL) >= bottlesUsed
+    } ?: false
 
     override fun assemble(input: DippingRecipeInput, registries: HolderLookup.Provider): ItemStack = result.copy()
 
