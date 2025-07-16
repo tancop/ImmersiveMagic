@@ -23,8 +23,6 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
     override fun buildRecipes(output: RecipeOutput) {
         addWitherPotions(output)
 
-        //addWeaknessPotions(output) // these don't use nether wart
-
         // Positive effects
 
         addVanillaPotion(output, "healing", Potions.HEALING, Items.GLISTERING_MELON_SLICE)
@@ -179,7 +177,8 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
 
     fun addWitherPotions(output: RecipeOutput) {
         BrewingRecipeBuilder(
-            listOf(Ingredient.of(Items.WITHER_ROSE)), FireType.SOUL, PotionRef.of(
+            listOf(Ingredient.of(Items.NETHER_WART), Ingredient.of(Items.WITHER_ROSE)), FireType.SOUL,
+            PotionRef.of(
                 "potion.immersivemagic.decay_potion", listOf(
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156)
@@ -187,7 +186,9 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
         ).save(output, "decay_potion")
 
         BrewingRecipeBuilder(
-            listOf(Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)), FireType.SOUL, PotionRef.of(
+            listOf(Ingredient.of(Items.NETHER_WART), Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)),
+            FireType.SOUL,
+            PotionRef.of(
                 "potion.immersivemagic.decay_splash_potion", listOf(
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.SPLASH
@@ -196,8 +197,12 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
 
         BrewingRecipeBuilder(
             listOf(
-                Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER), Ingredient.of(Items.DRAGON_BREATH)
-            ), FireType.SOUL, PotionRef.of(
+                Ingredient.of(Items.NETHER_WART),
+                Ingredient.of(Items.WITHER_ROSE),
+                Ingredient.of(Items.GUNPOWDER),
+                Ingredient.of(Items.DRAGON_BREATH)
+            ), FireType.SOUL,
+            PotionRef.of(
                 "potion.immersivemagic.decay_lingering_potion", listOf(
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.LINGERING
