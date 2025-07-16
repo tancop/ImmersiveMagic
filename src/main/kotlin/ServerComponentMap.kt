@@ -12,7 +12,8 @@ import net.minecraft.nbt.StringTag
 import net.minecraft.world.item.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
-class ServerComponentMap(private val compoundTag: CompoundTag) {
+@JvmInline
+value class ServerComponentMap(private val compoundTag: CompoundTag) {
     fun has(key: DataComponentType<*>): Boolean =
         compoundTag.contains(Util.getRegisteredName(BuiltInRegistries.DATA_COMPONENT_TYPE, key))
 
