@@ -1,0 +1,14 @@
+{
+  "type": "immersivemagic:dipping",
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:poison"
+  },
+  "container": {
+    "item": "minecraft:potato"
+  },
+  "result": {
+    "id": "minecraft:poisonous_potato",
+    "count": 1
+  }
+}

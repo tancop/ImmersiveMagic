@@ -1,0 +1,15 @@
+{
+  "type": "immersivemagic:dipping",
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:infested"
+  },
+  "bottles_used": 3,
+  "container": {
+    "item": "minecraft:deepslate"
+  },
+  "result": {
+    "id": "minecraft:infested_deepslate",
+    "count": 1
+  }
+}

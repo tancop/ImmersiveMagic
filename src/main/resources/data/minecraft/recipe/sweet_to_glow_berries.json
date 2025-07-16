@@ -1,0 +1,14 @@
+{
+  "type": "immersivemagic:dipping",
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:night_vision"
+  },
+  "container": {
+    "item": "minecraft:sweet_berries"
+  },
+  "result": {
+    "id": "minecraft:glow_berries",
+    "count": 1
+  }
+}

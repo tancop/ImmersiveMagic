@@ -1,0 +1,15 @@
+{
+  "type": "immersivemagic:dipping",
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:infested"
+  },
+  "bottles_used": 2,
+  "container": {
+    "item": "minecraft:cobblestone"
+  },
+  "result": {
+    "id": "minecraft:infested_cobblestone",
+    "count": 1
+  }
+}
