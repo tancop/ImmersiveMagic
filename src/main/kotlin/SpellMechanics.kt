@@ -19,7 +19,7 @@ fun <T : PlayerInteractEvent> handleSpellCast(
     val map = ServerComponentMap.fromStack(heldItem) ?: return
 
     val key = map.allKeys
-        .firstOrNull { ImmersiveMagic.Companion.SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) }
+        .firstOrNull { ImmersiveMagic.SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) }
         ?: return
     val resourceLocation = ResourceLocation.parse(key)
 

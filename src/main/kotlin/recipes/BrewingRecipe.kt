@@ -22,7 +22,7 @@ class BrewingRecipe(
         input: BrewingRecipeInput,
         level: Level
     ): Boolean {
-        val worldFireType = FireType.Companion.getFromBlock(level, input.entity.blockPos.below())
+        val worldFireType = FireType.getFromBlock(level, input.entity.blockPos.below())
         if (worldFireType < fireType) return false
 
         val usedItems = mutableListOf<ItemStack>()
@@ -50,9 +50,9 @@ class BrewingRecipe(
     // No way to make these work with recipe books
     override fun isSpecial(): Boolean = true
 
-    override fun getSerializer(): RecipeSerializer<*> = ImmersiveMagic.Companion.BREWING_SERIALIZER.get()
+    override fun getSerializer(): RecipeSerializer<*> = ImmersiveMagic.BREWING_SERIALIZER.get()
 
-    override fun getType(): RecipeType<*> = ImmersiveMagic.Companion.BREWING.get()
+    override fun getType(): RecipeType<*> = ImmersiveMagic.BREWING.get()
 
     // No dimension requirements
     override fun canCraftInDimensions(x: Int, y: Int): Boolean = true

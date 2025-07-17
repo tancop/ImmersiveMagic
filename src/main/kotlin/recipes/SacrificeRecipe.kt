@@ -38,9 +38,9 @@ class SacrificeRecipe(
     // No way to make these work with recipe books
     override fun isSpecial(): Boolean = true
 
-    override fun getSerializer(): RecipeSerializer<*> = ImmersiveMagic.Companion.SACRIFICE_SERIALIZER.get()
+    override fun getSerializer(): RecipeSerializer<*> = ImmersiveMagic.SACRIFICE_SERIALIZER.get()
 
-    override fun getType(): RecipeType<*> = ImmersiveMagic.Companion.SACRIFICE.get()
+    override fun getType(): RecipeType<*> = ImmersiveMagic.SACRIFICE.get()
 
     // No dimension requirements
     override fun canCraftInDimensions(x: Int, y: Int): Boolean = true

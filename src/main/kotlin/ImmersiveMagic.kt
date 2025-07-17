@@ -34,7 +34,7 @@ import net.neoforged.neoforge.registries.RegistryBuilder
 import java.util.function.Supplier
 
 
-@Mod(ImmersiveMagic.Companion.MOD_ID)
+@Mod(ImmersiveMagic.MOD_ID)
 class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
     init {
         BLOCK_ENTITY_TYPES.register(modEventBus)
