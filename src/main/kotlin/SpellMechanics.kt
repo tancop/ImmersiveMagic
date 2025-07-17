@@ -7,6 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.component.CustomData
+import net.minecraft.world.item.component.ItemLore
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 
 fun <T : PlayerInteractEvent> handleSpellCast(
@@ -36,7 +37,7 @@ fun <T : PlayerInteractEvent> handleSpellCast(
                 map.set(componentType as DataComponentType<SpellComponent>, newComponent)
 
                 heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(map.encode()))
-                heldItem.set(DataComponents.LORE, newComponent.getItemLore())
+                heldItem.set(DataComponents.LORE, ItemLore(listOf(newComponent.getLore())))
 
                 onSuccess(event)
                 return

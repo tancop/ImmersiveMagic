@@ -60,7 +60,9 @@ object SacrificeMechanics {
         level.addFreshEntity(
             ItemEntity(
                 level, spawnPos.x.toDouble(),
-                spawnPos.y.toDouble(), spawnPos.z.toDouble(), result.copy()
+                spawnPos.y.toDouble(), spawnPos.z.toDouble(), result.copy().apply {
+                    applyServerComponentLore()
+                }
             )
         )
 
@@ -119,7 +121,6 @@ object SacrificeMechanics {
         val recipes = level.recipeManager
 
         for (holder in recipes.getAllRecipesFor(ImmersiveMagic.SACRIFICE.get())) {
-            println("checking recipe ${holder.id}")
             val recipe = holder.value
             // Ignore unrelated items and pass an empty list if the recipe doesn't need any
             val filteredStacks = stacks.filter { stack -> recipe.items?.any { it.test(stack) } ?: false }

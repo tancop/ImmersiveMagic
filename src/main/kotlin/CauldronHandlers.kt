@@ -58,7 +58,9 @@ object CauldronHandlers {
                     val recipe = recipes.getRecipeFor(ImmersiveMagic.DIPPING.get(), input, level).getOrNull()?.value
 
                     if (recipe != null) {
-                        val result = recipe.result.copy()
+                        val result = recipe.result.copy().apply {
+                            applyServerComponentLore()
+                        }
                         if (!player.isCreative) stack.shrink(1)
 
                         handleDipping(player, level, pos, state, result, recipe)
@@ -70,7 +72,9 @@ object CauldronHandlers {
                             recipes.getRecipeFor(ImmersiveMagic.TOOL_DIPPING.get(), input, level).getOrNull()?.value
 
                         if (recipe != null) {
-                            val result = recipe.assemble(input, level.registryAccess())
+                            val result = recipe.assemble(input, level.registryAccess()).apply {
+                                applyServerComponentLore()
+                            }
                             if (!player.isCreative) stack.shrink(1)
 
                             handleDipping(player, level, pos, state, result, recipe)
