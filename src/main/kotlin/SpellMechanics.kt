@@ -16,7 +16,7 @@ fun <T : PlayerInteractEvent> handleSpellCast(
 ) {
     val heldItem = event.entity.getItemInHand(event.hand)
 
-    val map = ServerComponentMap.fromStack(heldItem) ?: return
+    val map = ServerComponentMap.fromStack(heldItem)
 
     val key = map.allKeys
         .firstOrNull { ImmersiveMagic.SPELL_COMPONENTS_REGISTRY.containsKey(ResourceLocation.parse(it)) }

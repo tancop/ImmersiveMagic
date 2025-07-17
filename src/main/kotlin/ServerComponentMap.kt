@@ -46,16 +46,19 @@ value class ServerComponentMap(private val compoundTag: CompoundTag) {
         }
     }
 
+    fun <T> remove(key: DataComponentType<T>) {
+        compoundTag.remove(Util.getRegisteredName(BuiltInRegistries.DATA_COMPONENT_TYPE, key))
+    }
+
     fun encode(): CompoundTag = compoundTag.copy()
 
     val allKeys: Set<String>
         get() = compoundTag.allKeys
 
     companion object {
-        fun fromStack(stack: ItemStack): ServerComponentMap? {
-            val entry = stack.get(DataComponents.CUSTOM_DATA) ?: return null
+        fun fromStack(stack: ItemStack): ServerComponentMap {
+            val compoundTag = stack.get(DataComponents.CUSTOM_DATA)?.copyTag() ?: CompoundTag()
 
-            val compoundTag = entry.copyTag() ?: CompoundTag()
             return ServerComponentMap(compoundTag)
         }
     }
