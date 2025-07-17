@@ -95,26 +95,6 @@ sealed class PotionRef {
         }
     }
 
-    data class CustomItem(
-        val item: ItemStack,
-        val color: Int,
-    ) : PotionRef() {
-        override fun getStack(): ItemStack {
-            return item.copy()
-        }
-
-        override fun getEffectColor(): Int = color
-
-        companion object {
-            val CODEC: Codec<CustomItem> = RecordCodecBuilder.create { instance ->
-                instance.group(
-                    ItemStack.CODEC.fieldOf("item").forGetter(CustomItem::item),
-                    ColorCodecs.RGB.fieldOf("color").forGetter(CustomItem::color),
-                ).apply(instance) { item, color -> CustomItem(item, color) }
-            }
-        }
-    }
-
     abstract fun getStack(): ItemStack
     abstract fun getEffectColor(): Int
 
@@ -130,32 +110,21 @@ sealed class PotionRef {
         ): PotionRef =
             CustomPotion(name, effects, color, type)
 
-        fun of(item: ItemStack, color: Int): PotionRef =
-            CustomItem(item, color)
-
         val CODEC: Codec<PotionRef?> =
-            Codec.xor(GamePotion.CODEC, Codec.xor(CustomPotion.CODEC, CustomItem.CODEC)).xmap({ either ->
+            Codec.xor(GamePotion.CODEC, CustomPotion.CODEC).xmap({ either ->
                 val left = either.left().getOrNull()
                 if (left != null) {
                     return@xmap left
                 }
                 val right = either.right().getOrNull()
                 if (right != null) {
-                    val innerLeft = right.left().getOrNull()
-                    if (innerLeft != null) {
-                        return@xmap innerLeft
-                    }
-                    val innerRight = right.right().getOrNull()
-                    if (innerRight != null) {
-                        return@xmap innerRight
-                    }
+                    return@xmap right
                 }
                 null
             }, { res ->
                 when (res) {
                     is GamePotion -> Either.left(res)
-                    is CustomPotion -> Either.right(Either.left(res))
-                    is CustomItem -> Either.right(Either.right(res))
+                    is CustomPotion -> Either.right(res)
                     else -> null
                 }
             })
