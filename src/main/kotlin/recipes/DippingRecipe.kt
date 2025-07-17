@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.LayeredCauldronBlock
 
 class DippingRecipe(
     val potion: PotionRef,
-    val container: Ingredient,
+    val item: Ingredient,
     val result: ItemStack,
     val bottlesUsed: Int = 1
 ) :
@@ -24,7 +24,7 @@ class DippingRecipe(
         level: Level
     ): Boolean = input.entity.storedPotion?.let {
         it == potion
-                && container.test(input.container)
+                && item.test(input.item)
                 && input.entity.blockState.getValue(LayeredCauldronBlock.LEVEL) >= bottlesUsed
     } ?: false
 

@@ -21,13 +21,13 @@ class DippingRecipeSerializer : RecipeSerializer<DippingRecipe> {
         val CODEC: MapCodec<DippingRecipe> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 PotionRef.CODEC.fieldOf("potion").forGetter { it.potion },
-                Ingredient.CODEC.fieldOf("container").forGetter(DippingRecipe::container),
+                Ingredient.CODEC.fieldOf("item").forGetter(DippingRecipe::item),
                 ItemStack.CODEC.fieldOf("result").forGetter(DippingRecipe::result),
                 Codec.INT.optionalFieldOf("bottles_used").forGetter { Optional.of(it.bottlesUsed) }
-            ).apply(instance) { potion, container, result, bottlesUsed ->
+            ).apply(instance) { potion, item, result, bottlesUsed ->
                 DippingRecipe(
                     potion ?: throw IllegalStateException("Recipe result is null"),
-                    container,
+                    item,
                     result,
                     bottlesUsed.orElse(1),
                 )

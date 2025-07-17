@@ -4,7 +4,7 @@
     "type": "NORMAL",
     "potion": "minecraft:night_vision"
   },
-  "container": {
+  "item": {
     "item": "minecraft:sweet_berries"
   },
   "result": {

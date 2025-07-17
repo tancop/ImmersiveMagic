@@ -5,7 +5,7 @@
     "potion": "minecraft:infested"
   },
   "bottles_used": 3,
-  "container": {
+  "item": {
     "item": "minecraft:deepslate"
   },
   "result": {
