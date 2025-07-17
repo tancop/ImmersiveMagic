@@ -16,9 +16,9 @@ class DippingRecipe(
     val potion: PotionRef,
     val item: Ingredient,
     val result: ItemStack,
-    val bottlesUsed: Int = 1
+    override val bottlesUsed: Int = 1
 ) :
-    Recipe<DippingRecipeInput>, MaybeSerializable {
+    Recipe<DippingRecipeInput>, MaybeSerializable, DippingRecipeInterface {
     override fun matches(
         input: DippingRecipeInput,
         level: Level
