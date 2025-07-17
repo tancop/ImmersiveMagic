@@ -25,8 +25,6 @@ object SacrificeMechanics {
 
         if (corePos == null) return
 
-        println("found core")
-
         val start = corePos.above().north().west()
         val end = corePos.above().south().east()
 
@@ -41,8 +39,6 @@ object SacrificeMechanics {
         } as List<ItemEntity>
 
         val stacks = droppedItems.map { it.item }
-
-        println("getting recipe")
 
         val matchResult = tryGetMatchingRecipe(level, player, deadEntity, stacks, droppedItems)
 
