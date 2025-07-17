@@ -145,6 +145,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 )
             })
 
+        val TOOL_DIPPING: DeferredHolder<RecipeType<*>, RecipeType<ToolDippingRecipe>> = RECIPE_TYPES.register(
+            "tool_dipping",
+            Supplier {
+                RecipeType.simple<ToolDippingRecipe>(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "tool_dipping")
+                )
+            })
+
         val RECIPE_SERIALIZERS: DeferredRegister<RecipeSerializer<*>> =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID)
 
@@ -156,6 +164,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         val SACRIFICE_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SacrificeRecipeSerializer> =
             RECIPE_SERIALIZERS.register("sacrifice", Supplier { SacrificeRecipeSerializer() })
+
+        val TOOL_DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, ToolDippingRecipeSerializer> =
+            RECIPE_SERIALIZERS.register("tool_dipping", Supplier { ToolDippingRecipeSerializer() })
 
         val SPELL_COMPONENTS_REGISTRY_KEY: ResourceKey<Registry<Unit>> =
             ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "spell_components"))

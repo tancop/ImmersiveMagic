@@ -1,0 +1,15 @@
+{
+  "type": "immersivemagic:tool_dipping",
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:poison"
+  },
+  "item": {
+    "tag": "minecraft:swords"
+  },
+  "components": {
+    "minecraft:lore": [
+      "Poisoned!"
+    ]
+  }
+}

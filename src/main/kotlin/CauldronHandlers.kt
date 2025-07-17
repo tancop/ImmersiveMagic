@@ -3,6 +3,7 @@ package dev.tancop.immersivemagic
 import dev.tancop.immersivemagic.recipes.BrewingRecipe
 import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
 import dev.tancop.immersivemagic.recipes.DippingRecipeInput
+import dev.tancop.immersivemagic.recipes.DippingRecipeInterface
 import net.minecraft.core.BlockPos
 import net.minecraft.core.cauldron.CauldronInteraction
 import net.minecraft.core.component.DataComponents
@@ -57,31 +58,25 @@ object CauldronHandlers {
                     val recipe = recipes.getRecipeFor(ImmersiveMagic.DIPPING.get(), input, level).getOrNull()?.value
 
                     if (recipe != null) {
-                        val result = recipe.result
-
-                        val resultStack = result.copy()
-                        if (!player.inventory.add(resultStack)) {
-                            // Player inventory is full, we drop the rest on the ground
-                            val itemPos = pos.center
-                            level.addFreshEntity(ItemEntity(level, itemPos.x, itemPos.y + 0.4, itemPos.z, resultStack))
-                        }
-
-                        // Lower fluid level based on recipe's bottlesUsed
-                        val currentLevel = state.getValue(LayeredCauldronBlock.LEVEL)
-                        val newLevel = currentLevel - recipe.bottlesUsed
-
-                        val newState = if (newLevel == 0) {
-                            Blocks.CAULDRON.defaultBlockState()
-                        } else {
-                            state.setValue(LayeredCauldronBlock.LEVEL, newLevel)
-                        }
-
-                        level.setBlockAndUpdate(pos, newState)
-                        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState))
-
+                        val result = recipe.result.copy()
                         if (!player.isCreative) stack.shrink(1)
 
+                        handleDipping(player, level, pos, state, result, recipe)
+
                         return ItemInteractionResult.CONSUME
+                    } else {
+                        // Try tool dipping
+                        val recipe =
+                            recipes.getRecipeFor(ImmersiveMagic.TOOL_DIPPING.get(), input, level).getOrNull()?.value
+
+                        if (recipe != null) {
+                            val result = recipe.assemble(input, level.registryAccess())
+                            if (!player.isCreative) stack.shrink(1)
+
+                            handleDipping(player, level, pos, state, result, recipe)
+
+                            return ItemInteractionResult.CONSUME
+                        }
                     }
                 } else {
                     // Item might still be part of a recipe
@@ -101,6 +96,33 @@ object CauldronHandlers {
         }
 
         return ItemInteractionResult.FAIL
+    }
+
+    private fun handleDipping(
+        player: Player,
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+        result: ItemStack,
+        recipe: DippingRecipeInterface
+    ) {
+        if (!player.inventory.add(result)) {
+            // Player inventory is full, we drop the rest on the ground
+            val itemPos = pos.center
+            level.addFreshEntity(ItemEntity(level, itemPos.x, itemPos.y + 0.4, itemPos.z, result))
+        }
+
+        val currentLevel = state.getValue(LayeredCauldronBlock.LEVEL)
+        val newLevel = currentLevel - recipe.bottlesUsed
+
+        val newState = if (newLevel == 0) {
+            Blocks.CAULDRON.defaultBlockState()
+        } else {
+            state.setValue(LayeredCauldronBlock.LEVEL, newLevel)
+        }
+
+        level.setBlockAndUpdate(pos, newState)
+        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState))
     }
 
     val waterBucketInteraction = CauldronInteraction { state, level, pos, player, hand, stack ->
