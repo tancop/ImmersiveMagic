@@ -163,16 +163,6 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
         addVanillaPotion(output, "weaving", Potions.WEAVING, Items.COBWEB)
         addVanillaPotion(output, "infestation", Potions.INFESTED, Items.STONE)
         addVanillaPotion(output, "wind_charging", Potions.WIND_CHARGED, Items.BREEZE_ROD)
-
-        addVanillaPotion(output, "turtle_master", Potions.TURTLE_MASTER, Items.TURTLE_HELMET)
-        addVanillaPotion(output, "long_turtle_master", Potions.LONG_TURTLE_MASTER, Items.TURTLE_HELMET, Items.REDSTONE)
-        addVanillaPotion(
-            output,
-            "strong_turtle_master",
-            Potions.STRONG_TURTLE_MASTER,
-            Items.TURTLE_HELMET,
-            Items.GLOWSTONE_DUST
-        )
     }
 
     fun addWitherPotions(output: RecipeOutput) {
