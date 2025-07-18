@@ -1,18 +1,23 @@
 package dev.tancop.immersivemagic
 
+import com.mojang.datafixers.util.Either
 import dev.tancop.immersivemagic.recipes.*
 import dev.tancop.immersivemagic.spells.EvokerFangsSpellComponent
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
 import dev.tancop.immersivemagic.spells.SpellComponent
 import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponentType
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.tags.TagKey
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.Block
@@ -26,6 +31,7 @@ import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.util.TriState
 import net.neoforged.neoforge.data.event.GatherDataEvent
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
@@ -85,8 +91,40 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             }
         }
 
+        fun onAttackEntity(event: AttackEntityEvent) {
+            val player = event.entity
+            val target = event.target
+
+            val heldItem = player.getItemInHand(InteractionHand.MAIN_HAND)
+
+            if (!heldItem.isEmpty) {
+                val map = ServerComponentMap.fromStack(heldItem)
+
+                val component = map.get(DIPPED_WEAPON.get())
+
+                if (component != null) {
+                    if (component.charges == 1) {
+                        map.remove(DIPPED_WEAPON.get())
+                    } else {
+                        val newComponent = component.withLowerCharge()
+                        map.set(DIPPED_WEAPON.get(), newComponent)
+                    }
+
+                    if (target is LivingEntity) {
+                        component.applyEffects(target)
+                    }
+
+                    heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(map.encode()))
+
+                    heldItem.applyServerComponentLore()
+                }
+            }
+        }
+
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickBlock> { onRightClickBlock(it) }
         NeoForge.EVENT_BUS.addListener<LivingDeathEvent> { onLivingDeath(it) }
+
+        NeoForge.EVENT_BUS.addListener<AttackEntityEvent> { onAttackEntity(it) }
 
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.EntityInteractSpecific> { onRightClickEntity(it) }
         NeoForge.EVENT_BUS.addListener<PlayerInteractEvent.RightClickItem> { onRightClickItem(it) }
@@ -194,6 +232,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 builder
                     .persistent(EvokerFangsSpellComponent.CODEC.codec())
                     .networkSynchronized(EmptyStreamCodec(EvokerFangsSpellComponent(0, 3)))
+            }
+
+        @Suppress("unused")
+        val DIPPED_WEAPON: DeferredHolder<DataComponentType<*>, DataComponentType<DippedWeaponComponent>> =
+            DATA_COMPONENT_TYPES.registerComponentType("dipped_weapon") { builder ->
+                builder
+                    .persistent(DippedWeaponComponent.CODEC.codec())
+                    .networkSynchronized(EmptyStreamCodec(DippedWeaponComponent(0, Either.left(null))))
             }
 
         init {

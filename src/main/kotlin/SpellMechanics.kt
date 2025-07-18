@@ -37,7 +37,7 @@ fun <T : PlayerInteractEvent> handleSpellCast(
                 map.set(componentType as DataComponentType<SpellComponent>, newComponent)
 
                 heldItem.set(DataComponents.CUSTOM_DATA, CustomData.of(map.encode()))
-                heldItem.set(DataComponents.LORE, ItemLore(listOf(newComponent.getLore())))
+                heldItem.set(DataComponents.LORE, ItemLore(newComponent.getLore()))
 
                 onSuccess(event)
                 return

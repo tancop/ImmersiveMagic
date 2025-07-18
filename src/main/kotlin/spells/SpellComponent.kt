@@ -14,6 +14,8 @@ abstract class SpellComponent : LoreProvider {
     abstract val maxCharges: Int
     abstract fun withLowerCharge(): SpellComponent
 
-    override fun getLore(): Component = Component.literal("${charges}/${maxCharges} ")
-        .append(Component.translatableWithFallback("ui.immersivemagic.spell_charges", "charges"))
+    override fun getLore(): List<Component> = listOf(
+        Component.literal("${charges}/${maxCharges} ")
+            .append(Component.translatableWithFallback("ui.immersivemagic.spell_charges", "charges"))
+    )
 }

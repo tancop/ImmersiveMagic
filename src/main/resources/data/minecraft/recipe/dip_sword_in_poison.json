@@ -7,9 +7,10 @@
   "item": {
     "tag": "minecraft:swords"
   },
-  "components": {
-    "minecraft:lore": [
-      "Poisoned!"
-    ]
+  "server_components": {
+    "immersivemagic:dipped_weapon": {
+      "charges": 5,
+      "effect": "minecraft:poison"
+    }
   }
 }

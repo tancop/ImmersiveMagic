@@ -8,11 +8,12 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
 
 interface LoreProvider {
-    fun getLore(): Component?
+    fun getLore(): List<Component>
 }
 
 fun ItemStack.applyServerComponentLore() {
     val map = ServerComponentMap.fromStack(this)
+    val bigList = mutableListOf<Component>()
 
     for (key in map.allKeys) {
         val type = BuiltInRegistries.DATA_COMPONENT_TYPE.get(ResourceLocation.parse(key))
@@ -23,10 +24,11 @@ fun ItemStack.applyServerComponentLore() {
         if (component is LoreProvider) {
             val lore = component.getLore()
 
-            if (lore != null) {
-                set(DataComponents.LORE, ItemLore(listOf(lore)))
-                return
+            for (line in lore) {
+                bigList.add(line)
             }
         }
     }
+
+    set(DataComponents.LORE, ItemLore(bigList))
 }
