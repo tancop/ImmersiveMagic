@@ -15,9 +15,6 @@
       "item": "minecraft:gunpowder"
     }
   ],
-  "receiver": {
-    "item": "minecraft:glass_bottle"
-  },
   "result": {
     "type": "SPLASH",
     "potion": "minecraft:long_night_vision"

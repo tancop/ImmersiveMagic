@@ -6,9 +6,6 @@
       "item": "minecraft:fermented_spider_eye"
     }
   ],
-  "receiver": {
-    "item": "minecraft:glass_bottle"
-  },
   "result": {
     "type": "NORMAL",
     "potion": "minecraft:weakness"

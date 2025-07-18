@@ -3,12 +3,12 @@
   "fireType": "SOUL",
   "ingredients": [
     {
+      "item": "minecraft:nether_wart"
+    },
+    {
       "item": "minecraft:wither_rose"
     }
   ],
-  "receiver": {
-    "item": "minecraft:glass_bottle"
-  },
   "result": {
     "type": "NORMAL",
     "color": {

@@ -18,9 +18,6 @@
       "item": "minecraft:dragon_breath"
     }
   ],
-  "receiver": {
-    "item": "minecraft:glass_bottle"
-  },
   "result": {
     "type": "LINGERING",
     "potion": "minecraft:strong_regeneration"

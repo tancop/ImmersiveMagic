@@ -3,6 +3,9 @@
   "fireType": "SOUL",
   "ingredients": [
     {
+      "item": "minecraft:nether_wart"
+    },
+    {
       "item": "minecraft:wither_rose"
     },
     {
@@ -12,9 +15,6 @@
       "item": "minecraft:dragon_breath"
     }
   ],
-  "receiver": {
-    "item": "minecraft:glass_bottle"
-  },
   "result": {
     "type": "LINGERING",
     "color": {
