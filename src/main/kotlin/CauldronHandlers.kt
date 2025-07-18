@@ -84,7 +84,9 @@ object CauldronHandlers {
                     }
                 } else {
                     // Item might still be part of a recipe
-                    if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }) {
+                    if (BrewingRecipe.getAcceptedIngredients(level).any { it.test(stack) }
+                        && entity.items.none { it.item == stack.item }
+                    ) {
                         entity.items.add(stack.copy())
 
                         checkRecipesAndUpdate(level, entity, pos)
