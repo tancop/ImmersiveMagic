@@ -40,6 +40,7 @@ object CauldronHandlers {
             .filter { it.value.matches(input, level) }.maxByOrNull { it.value.ingredients.size }
 
         entity.storedPotion = recipe?.value?.result
+        entity.setChanged()
 
         entity.spawnParticles(level, pos, 20)
     }
@@ -145,6 +146,7 @@ object CauldronHandlers {
             val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
             entity?.items?.clear()
             entity?.storedPotion = null
+            entity?.setChanged()
 
             level.setBlockAndUpdate(pos, newState)
 
@@ -205,6 +207,7 @@ object CauldronHandlers {
                     // Adding water dilutes any stored potion
                     val entity = level.getBlockEntity(pos) as? LayeredCauldronBlockEntity
                     entity?.items?.clear()
+                    entity?.setChanged()
 
                     level.setBlockAndUpdate(pos, state.cycle(LayeredCauldronBlock.LEVEL))
 
