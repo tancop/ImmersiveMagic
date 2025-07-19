@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.ChatFormatting
 import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.LivingEntity
@@ -26,7 +27,17 @@ data class DippedWeaponComponent(val charges: Int, val effect: Either<Holder<Pot
                 .withStyle(TEXT_STYLE)
         )
 
-        PotionContents.addPotionTooltip(effects, { lines.add(it) }, 1.0f, 20f)
+        PotionContents.addPotionTooltip(
+            effects,
+            {
+                lines.add(
+                    MutableComponent.create(it.contents)
+                        .withStyle(it.style.withItalic(false))
+                )
+            },
+            1.0f,
+            20f
+        )
 
         lines.add(
             Component.literal("($charges ").withStyle(TEXT_STYLE)
@@ -85,6 +96,6 @@ data class DippedWeaponComponent(val charges: Int, val effect: Either<Holder<Pot
             }
         }
 
-        val TEXT_STYLE: Style = Style.EMPTY.withColor(ChatFormatting.BLUE).withItalic(false)
+        val TEXT_STYLE: Style = Style.EMPTY.withColor(ChatFormatting.GREEN).withItalic(false)
     }
 }
