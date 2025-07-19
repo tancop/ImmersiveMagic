@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_recipe": {
+      "conditions": {
+        "recipe": "immersivemagic:oozing_splash_potion"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "immersivemagic:oozing_splash_potion"
+    ]
+  }
+}

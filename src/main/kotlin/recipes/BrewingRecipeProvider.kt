@@ -173,7 +173,7 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156)
             )
-        ).save(output, "decay_potion")
+        ).save(output, "immersivemagic:decay_potion")
 
         BrewingRecipeBuilder(
             listOf(Ingredient.of(Items.NETHER_WART), Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)),
@@ -183,7 +183,7 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.SPLASH
             )
-        ).save(output, "decay_splash_potion")
+        ).save(output, "immersivemagic:decay_splash_potion")
 
         BrewingRecipeBuilder(
             listOf(
@@ -197,7 +197,7 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
                     PotionEffect(MobEffects.WITHER, 800)
                 ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.LINGERING
             )
-        ).save(output, "decay_lingering_potion")
+        ).save(output, "immersivemagic:decay_lingering_potion")
     }
 
     fun addVanillaPotion(
@@ -211,18 +211,18 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
 
         BrewingRecipeBuilder(
             baseIngredients, FireType.SOUL, PotionRef.of(result)
-        ).save(output, "${id}_potion")
+        ).save(output, "immersivemagic:${id}_potion")
 
         BrewingRecipeBuilder(
             baseIngredients + Ingredient.of(Items.GUNPOWDER),
             FireType.SOUL,
             PotionRef.of(result, PotionRef.PotionType.SPLASH)
-        ).save(output, "${id}_splash_potion")
+        ).save(output, "immersivemagic:${id}_splash_potion")
 
         BrewingRecipeBuilder(
             baseIngredients + Ingredient.of(Items.GUNPOWDER) + Ingredient.of(Items.DRAGON_BREATH),
             FireType.SOUL,
             PotionRef.of(result, PotionRef.PotionType.LINGERING)
-        ).save(output, "${id}_lingering_potion")
+        ).save(output, "immersivemagic:${id}_lingering_potion")
     }
 }
