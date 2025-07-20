@@ -4,9 +4,14 @@
     "type": "NORMAL",
     "potion": "minecraft:slowness"
   },
-  "item": {
-    "tag": "minecraft:swords"
-  },
+  "item": [
+    {
+      "tag": "minecraft:swords"
+    },
+    {
+      "tag": "minecraft:axes"
+    }
+  ],
   "server_components": {
     "immersivemagic:dipped_weapon": {
       "charges": 5,
