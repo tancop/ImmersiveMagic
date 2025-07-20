@@ -26,6 +26,7 @@
         "visible": true
       }
     ],
+    "fallback_name": "Potion of Decay",
     "name": "potion.immersivemagic.decay_potion"
   }
 }

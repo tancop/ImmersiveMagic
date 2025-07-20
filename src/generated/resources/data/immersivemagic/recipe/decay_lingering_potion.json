@@ -32,6 +32,7 @@
         "visible": true
       }
     ],
+    "fallback_name": "Lingering Potion of Decay",
     "name": "potion.immersivemagic.decay_lingering_potion"
   }
 }

@@ -29,6 +29,7 @@
         "visible": true
       }
     ],
+    "fallback_name": "Splash Potion of Decay",
     "name": "potion.immersivemagic.decay_splash_potion"
   }
 }

@@ -59,7 +59,8 @@ sealed class PotionRef {
         val name: String,
         val effects: List<PotionEffect>,
         val color: Int,
-        val type: PotionType
+        val type: PotionType,
+        val fallbackName: String?
     ) : PotionRef() {
         override fun getStack(): ItemStack {
             val contents = PotionContents(
@@ -75,7 +76,12 @@ sealed class PotionRef {
                 }, 1
             )
             stack.set(DataComponents.POTION_CONTENTS, contents)
-            stack.set(DataComponents.ITEM_NAME, Component.translatable(name))
+            stack.set(
+                DataComponents.ITEM_NAME, when (fallbackName) {
+                    null -> Component.translatable(name)
+                    else -> Component.translatableWithFallback(name, fallbackName)
+                }
+            )
             return stack
         }
 
@@ -85,11 +91,12 @@ sealed class PotionRef {
             val CODEC: Codec<CustomPotion> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     Codec.STRING.fieldOf("name").forGetter(CustomPotion::name),
+                    Codec.STRING.optionalFieldOf("fallback_name").forGetter { Optional.ofNullable(it.fallbackName) },
                     PotionEffect.CODEC.listOf().fieldOf("effects").forGetter(CustomPotion::effects),
                     ColorCodecs.RGB.fieldOf("color").forGetter(CustomPotion::color),
                     Codec.STRING.fieldOf("type").forGetter { it.type.name },
-                ).apply(instance) { name, effects, color, type ->
-                    CustomPotion(name, effects, color, PotionType.valueOf(type))
+                ).apply(instance) { name, fallbackName, effects, color, type ->
+                    CustomPotion(name, effects, color, PotionType.valueOf(type), fallbackName.getOrNull())
                 }
             }
         }
@@ -106,9 +113,10 @@ sealed class PotionRef {
             name: String,
             effects: List<PotionEffect>,
             color: Int,
-            type: PotionType = PotionType.NORMAL
+            type: PotionType = PotionType.NORMAL,
+            fallbackName: String? = null,
         ): PotionRef =
-            CustomPotion(name, effects, color, type)
+            CustomPotion(name, effects, color, type, fallbackName)
 
         val CODEC: Codec<PotionRef?> =
             Codec.xor(GamePotion.CODEC, CustomPotion.CODEC).xmap({ either ->

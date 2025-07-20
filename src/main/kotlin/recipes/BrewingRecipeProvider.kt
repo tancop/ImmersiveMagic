@@ -171,7 +171,8 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
             PotionRef.of(
                 "potion.immersivemagic.decay_potion", listOf(
                     PotionEffect(MobEffects.WITHER, 800)
-                ), FastColor.ARGB32.opaque(0x736156)
+                ), FastColor.ARGB32.opaque(0x736156),
+                fallbackName = "Potion of Decay"
             )
         ).save(output, "immersivemagic:decay_potion")
 
@@ -181,7 +182,8 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
             PotionRef.of(
                 "potion.immersivemagic.decay_splash_potion", listOf(
                     PotionEffect(MobEffects.WITHER, 800)
-                ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.SPLASH
+                ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.SPLASH,
+                fallbackName = "Splash Potion of Decay"
             )
         ).save(output, "immersivemagic:decay_splash_potion")
 
@@ -193,9 +195,13 @@ class BrewingRecipeProvider(output: PackOutput, registries: CompletableFuture<Ho
                 Ingredient.of(Items.DRAGON_BREATH)
             ), FireType.SOUL,
             PotionRef.of(
-                "potion.immersivemagic.decay_lingering_potion", listOf(
+                "potion.immersivemagic.decay_lingering_potion",
+                listOf(
                     PotionEffect(MobEffects.WITHER, 800)
-                ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.LINGERING
+                ),
+                FastColor.ARGB32.opaque(0x736156),
+                type = PotionRef.PotionType.LINGERING,
+                fallbackName = "Lingering Potion of Decay"
             )
         ).save(output, "immersivemagic:decay_lingering_potion")
     }
