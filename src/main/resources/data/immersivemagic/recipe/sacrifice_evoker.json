@@ -6,7 +6,7 @@
       "item": "minecraft:paper"
     }
   ],
-  "xp_cost": 15,
+  "xp_cost": 10,
   "result": {
     "count": 1,
     "id": "minecraft:paper",
