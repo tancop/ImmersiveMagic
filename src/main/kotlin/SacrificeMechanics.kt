@@ -144,10 +144,10 @@ object SacrificeMechanics {
     // Finds all possible cores around a slab
     fun findPossibleCores(level: Level, pos: BlockPos): Set<BlockPos> {
         val cores = mutableSetOf<BlockPos>()
-        for (x in -1..1) {
-            for (y in -1..1) {
-                for (z in -2..0) {
-                    val checkPos = pos.east(x).north(y).above(z)
+        for (x in -2..2) {
+            for (z in -2..2) {
+                for (y in -2..1) {
+                    val checkPos = pos.east(x).north(z).above(y)
                     if (level.getBlockState(checkPos).`is`(Blocks.GOLD_BLOCK)) {
                         cores.add(checkPos)
                     }
@@ -157,16 +157,21 @@ object SacrificeMechanics {
         return cores
     }
 
+    fun isPolishedDiorite(level: Level, pos: BlockPos): Boolean {
+        val state = level.getBlockState(pos)
+
+        return state.`is`(Blocks.POLISHED_DIORITE) || state.`is`(Blocks.POLISHED_DIORITE_SLAB)
+    }
+
     // Checks if all blocks around the core gold block are polished diorite "marble" slabs.
-    // Please don't try and draw the check pattern (unless you're Kanye)
-    fun isValidAltarCore(level: Level, goldPos: BlockPos): Boolean =
-        level.getBlockState(goldPos).`is`(Blocks.GOLD_BLOCK)
-                && level.getBlockState(goldPos.north()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.north().east()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.east()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.east().south()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.south()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.south().west()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.west()).`is`(Blocks.POLISHED_DIORITE_SLAB)
-                && level.getBlockState(goldPos.west().north()).`is`(Blocks.POLISHED_DIORITE_SLAB)
+    fun isValidAltarCore(level: Level, goldPos: BlockPos): Boolean {
+        for (x in -1..1) {
+            for (y in -1..1) {
+                if (x == 0 && y == 0) continue
+
+                if (!isPolishedDiorite(level, goldPos.north(x).west(y))) return false
+            }
+        }
+        return true
+    }
 }
