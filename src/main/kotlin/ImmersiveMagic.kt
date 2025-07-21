@@ -83,14 +83,10 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             val level = entity.level()
             if (level.isClientSide) return
 
-            val pos = entity.blockPosition().below()
-
             val source = event.source
             val killer = source.entity
             if (killer != null && killer.type == (EntityType.PLAYER)) {
-                if (!SoulBindingMechanics.handleEntityDeath(level, killer as Player, entity)) {
-                    SacrificeMechanics.handleEntityDeath(level, pos, entity, killer)
-                }
+                SoulBindingMechanics.handleEntityDeath(level, killer as Player, entity)
             }
         }
 
@@ -178,14 +174,6 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 )
             })
 
-        val SACRIFICE: DeferredHolder<RecipeType<*>, RecipeType<SacrificeRecipe>> = RECIPE_TYPES.register(
-            "sacrifice",
-            Supplier {
-                RecipeType.simple<SacrificeRecipe>(
-                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "sacrifice")
-                )
-            })
-
         val TOOL_DIPPING: DeferredHolder<RecipeType<*>, RecipeType<ToolDippingRecipe>> = RECIPE_TYPES.register(
             "tool_dipping",
             Supplier {
@@ -210,9 +198,6 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         val DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, DippingRecipeSerializer> =
             RECIPE_SERIALIZERS.register("dipping", Supplier { DippingRecipeSerializer() })
-
-        val SACRIFICE_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SacrificeRecipeSerializer> =
-            RECIPE_SERIALIZERS.register("sacrifice", Supplier { SacrificeRecipeSerializer() })
 
         val TOOL_DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, ToolDippingRecipeSerializer> =
             RECIPE_SERIALIZERS.register("tool_dipping", Supplier { ToolDippingRecipeSerializer() })
