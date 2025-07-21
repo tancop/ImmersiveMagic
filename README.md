@@ -15,7 +15,7 @@ the splash or lingering versions with gunpowder and dragon's breath.
 
 # Dipping
 
-![Poison sword ](docs/poison_sword.png)
+![Tooltip for a poison tipped sword](docs/poison_sword.png)
 
 Ever wanted to dip your blade in poison and beat a monster Witcher-style? Now you can! Brew a potion of **poison,
 weakness or slowness** in a cauldron and right click it with a **sword or axe** while sneaking. The next five hits with
