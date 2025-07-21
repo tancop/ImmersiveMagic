@@ -12,14 +12,11 @@ import kotlin.jvm.optionals.getOrNull
 object SoulBindingMechanics {
     fun handleEntityDeath(level: Level, killer: Player, deadEntity: LivingEntity): Boolean {
         val recipes = level.recipeManager
-        println("checking on entity death, $deadEntity killed by $killer")
 
         val input = SoulBindingRecipeInput(killer, deadEntity)
         val recipe = recipes.getRecipeFor(SOUL_BINDING.get(), input, level).getOrNull()
 
         if (recipe == null) return false
-
-        println("found recipe for entity death")
 
         killer.setItemInHand(
             InteractionHand.OFF_HAND,
