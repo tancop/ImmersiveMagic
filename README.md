@@ -1,42 +1,52 @@
-# Immersive Magic
+# ![Immersive Magic](docs/Header2x.png)
 
-This mod adds new mechanics to make Minecraft feel more interesting with in-world crafting instead of magic blocks and
-UI popups. Inspired by [Violet Moon's Botania](https://modrinth.com/mod/botania) and the original, never fully
-implemented Beta 1.9 brewing system.
+This mod adds **brand new game mechanics** to make Minecraft feel more ✨magical✨. Works in single player and fully
+server side with vanilla or Fabric clients supported. Created for
+[NeoForge's 2025 Serverside Summer](https://neoforged.net/news/2025serversidesummer/).
 
 # Brewing
 
-To get started with brewing, place a cauldron on top of a fire or a campfire and fill it with water. You can put in some
-ingredients by right clicking with the item. The order you put them in doesn't matter. The cauldron will give off
-colored bubbles if the items in it produce a useful potion. Take it out by right clicking with an empty bottle.
-If the recipe was wrong, you get a mundane potion instead.
+You can now **brew potions in cauldrons** instead of a brewing stand. Just place one above a soul fire or campfire and
+right click to put in the ingredients. When you're done right click with a bottle to take them out.
 
-Some recipes need hotter soul fire (or no fire at all) to work. You can always use a stronger fire instead of a weaker
-one, so don't worry about keeping both normal and soul fires around. If you add ingredients before the cauldron heats
-up, you need to right click on it with an empty hand to stir the potion.
-
-By default, you can brew all the vanilla potions using the same recipes as normal. Server owners
-can also [add new recipes](./docs/Writing_Recipes.md) to tweak gameplay or add new potions without client-side mods.
+All vanilla potions work with the same recipe as before, with one change - instead of the Turtle Master ones nobody
+uses, **wither potions** are now a thing on Java. You can brew the basic one with nether wart and a **wither rose**, and
+the splash or lingering versions with gunpowder and dragon's breath.
 
 # Dipping
 
-Some items can be dipped in a potion to transform them into something new. Right click a potion filled cauldron while
-sneaking with an item in your hand. This consumes the item and gives you the result.
+![Poison sword ](docs/poison_sword.png)
 
-# Sacrifice
+Ever wanted to dip your blade in poison and beat a monster Witcher-style? Now you can! Brew a potion of **poison,
+weakness or slowness** in a cauldron and right click it with a **sword or axe** while sneaking. The next five hits with
+that weapon will apply that effect to the unfortunate victim.
 
-You can sacrifice some mobs to get extra rewards with their normal drops. You need an altar built like this:
+Other recipes can transform the item, like **poisoning a potato** or turning sweet berries into **glow berries** with a
+night vision potion.
 
-```
-XXX
-XGX
-XXX
-```
+# Spells
 
-where `G` is a gold block and `X` is a top-half polished diorite slab. When you (or any other player) kill a mob of the
-right type on top of the altar, lightning strikes on the gold block and you receive the drops. Some sacrifices cost XP
-and can't be performed if you have less than the required amount.
+![Player using the evoker fangs spell on a skeleton](docs/fangs.png)
 
-Some recipes need specific items dropped on the altar so the sacrifice can transform them, like turning an iron
-ingot into gold by killing a pig. You should only drop one stack for every type of item, but bigger stacks or extra
-unrelated items are fine.
+We all know you can shoot fire charges from a dispenser, but what about your hands? **Fireball** lets you do that.
+Spells are a **new type of item** you can cast by **right clicking** with one in your hand. Right now Immersive Magic
+adds two of them:
+
+* **Evoker Fangs** - spawns a line of 8 fangs in front of you like the evoker's long-range attack
+* **Fireball** - shoots an explosive fireball that sets things on fire
+
+I got more of them planned, so stay tuned for updates!
+
+# Soul Binding
+
+Ok, but how do you actually get spells? To get started craft an **empty scroll** with a piece of **paper** and an
+**amethyst shard**. Equip it in your off hand and **kill a mob** to trap its soul in the scroll. This lets you
+cast the mob's associated spell a limited amount of times. **Nothing happens** if the mob you killed doesn't have one.
+
+You can also use **spells as a container** instead of crafting a new scroll every time.
+
+* **Evoker** gives **Evoker Fangs**, obviously
+* **Blaze** gives **Fireball**
+
+Of course, there's a catch. Soul binding costs XP, the same amount you get from killing the mob. This means you get **no
+XP reward** and you need to have at least that amount on your bar. Still worth it if you ask me.
