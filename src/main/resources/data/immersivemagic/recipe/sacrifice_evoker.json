@@ -1,11 +1,6 @@
 {
-  "type": "immersivemagic:sacrifice",
+  "type": "immersivemagic:soul_binding",
   "entity": "minecraft:evoker",
-  "items": [
-    {
-      "item": "minecraft:paper"
-    }
-  ],
   "xp_cost": 10,
   "result": {
     "count": 1,

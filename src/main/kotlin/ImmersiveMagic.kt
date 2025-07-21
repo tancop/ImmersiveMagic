@@ -2,6 +2,7 @@ package dev.tancop.immersivemagic
 
 import com.mojang.datafixers.util.Either
 import dev.tancop.immersivemagic.recipes.*
+import dev.tancop.immersivemagic.spells.EmptyScrollComponent
 import dev.tancop.immersivemagic.spells.EvokerFangsSpellComponent
 import dev.tancop.immersivemagic.spells.FireballSpellComponent
 import dev.tancop.immersivemagic.spells.SpellComponent
@@ -87,7 +88,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             val source = event.source
             val killer = source.entity
             if (killer != null && killer.type == (EntityType.PLAYER)) {
-                SacrificeMechanics.handleEntityDeath(level, pos, entity, killer as Player)
+                if (!SoulBindingMechanics.handleEntityDeath(level, killer as Player, entity)) {
+                    SacrificeMechanics.handleEntityDeath(level, pos, entity, killer)
+                }
             }
         }
 
@@ -191,6 +194,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 )
             })
 
+        val SOUL_BINDING: DeferredHolder<RecipeType<*>, RecipeType<SoulBindingRecipe>> = RECIPE_TYPES.register(
+            "soul_binding",
+            Supplier {
+                RecipeType.simple<SoulBindingRecipe>(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "soul_binding")
+                )
+            })
+
         val RECIPE_SERIALIZERS: DeferredRegister<RecipeSerializer<*>> =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID)
 
@@ -205,6 +216,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
         val TOOL_DIPPING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, ToolDippingRecipeSerializer> =
             RECIPE_SERIALIZERS.register("tool_dipping", Supplier { ToolDippingRecipeSerializer() })
+
+        val SOUL_BINDING_SERIALIZER: DeferredHolder<RecipeSerializer<*>, SoulBindingRecipeSerializer> =
+            RECIPE_SERIALIZERS.register("soul_binding", Supplier { SoulBindingRecipeSerializer() })
 
         val SPELL_COMPONENTS_REGISTRY_KEY: ResourceKey<Registry<Unit>> =
             ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "spell_components"))
@@ -232,6 +246,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                 builder
                     .persistent(EvokerFangsSpellComponent.CODEC.codec())
                     .networkSynchronized(EmptyStreamCodec(EvokerFangsSpellComponent(0, 3)))
+            }
+
+        @Suppress("unused")
+        val EMPTY_SCROLL: DeferredHolder<DataComponentType<*>, DataComponentType<EmptyScrollComponent>> =
+            DATA_COMPONENT_TYPES.registerComponentType("empty_scroll") { builder ->
+                builder
+                    .persistent(EmptyScrollComponent.CODEC)
+                    .networkSynchronized(EmptyStreamCodec(EmptyScrollComponent()))
             }
 
         @Suppress("unused")

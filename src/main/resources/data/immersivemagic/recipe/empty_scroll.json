@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:amethyst_shard"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:paper",
+    "components": {
+      "minecraft:custom_data": {
+        "immersivemagic:empty_scroll": {}
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:item_name": "{\"translate\": \"item.immersivemagic.empty_scroll\", \"fallback\": \"Empty Scroll\"}",
+      "minecraft:enchantment_glint_override": true
+    }
+  }
+}
