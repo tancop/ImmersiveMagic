@@ -2,10 +2,7 @@ package dev.tancop.immersivemagic.recipes
 
 import dev.tancop.immersivemagic.FireType
 import dev.tancop.immersivemagic.PotionRef
-import net.minecraft.advancements.AdvancementRequirements
-import net.minecraft.advancements.AdvancementRewards
 import net.minecraft.advancements.Criterion
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger
 import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeOutput
 import net.minecraft.resources.ResourceLocation
@@ -17,12 +14,9 @@ class BrewingRecipeBuilder(
     val ingredients: List<Ingredient>,
     val fireType: FireType,
     val result: PotionRef
-) :
-    RecipeBuilder {
-    val criteria: MutableMap<String, Criterion<*>> = LinkedHashMap()
+) : RecipeBuilder {
 
     override fun unlockedBy(name: String, criterion: Criterion<*>): BrewingRecipeBuilder {
-        this.criteria.put(name, criterion)
         return this
     }
 
@@ -35,14 +29,7 @@ class BrewingRecipeBuilder(
     }
 
     override fun save(output: RecipeOutput, id: ResourceLocation) {
-        val advancement = output.advancement()
-            .addCriterion("has_recipe", RecipeUnlockedTrigger.unlocked(id))
-            .rewards(AdvancementRewards.Builder.recipe(id))
-            .requirements(AdvancementRequirements.Strategy.OR)
-
-        this.criteria.forEach { (key, criterion) -> advancement.addCriterion(key, criterion) }
-
         val recipe = BrewingRecipe(ingredients, fireType, result)
-        output.accept(id, recipe, advancement.build(id.withPrefix("brew_")))
+        output.accept(id, recipe, null)
     }
 }
