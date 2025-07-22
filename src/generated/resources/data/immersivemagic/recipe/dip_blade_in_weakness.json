@@ -1,0 +1,21 @@
+{
+  "type": "immersivemagic:tool_dipping",
+  "item": [
+    {
+      "tag": "minecraft:swords"
+    },
+    {
+      "tag": "minecraft:axes"
+    }
+  ],
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:weakness"
+  },
+  "server_components": {
+    "immersivemagic:dipped_weapon": {
+      "charges": 5,
+      "effect": "minecraft:weakness"
+    }
+  }
+}

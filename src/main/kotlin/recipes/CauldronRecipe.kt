@@ -1,5 +1,5 @@
 package dev.tancop.immersivemagic.recipes
 
-interface DippingRecipeInterface {
+interface CauldronRecipe {
     val bottlesUsed: Int
 }

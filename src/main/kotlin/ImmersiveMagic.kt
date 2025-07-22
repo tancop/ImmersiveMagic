@@ -262,7 +262,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
 
             generator.addProvider(
                 event.includeServer(),
-                BrewingRecipeProvider(output, lookupProvider)
+                CustomRecipeProvider(output, lookupProvider)
             )
 
             generator.addProvider(

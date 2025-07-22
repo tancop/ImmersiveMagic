@@ -2,8 +2,8 @@ package dev.tancop.immersivemagic
 
 import dev.tancop.immersivemagic.recipes.BrewingRecipe
 import dev.tancop.immersivemagic.recipes.BrewingRecipeInput
+import dev.tancop.immersivemagic.recipes.CauldronRecipe
 import dev.tancop.immersivemagic.recipes.DippingRecipeInput
-import dev.tancop.immersivemagic.recipes.DippingRecipeInterface
 import net.minecraft.core.BlockPos
 import net.minecraft.core.cauldron.CauldronInteraction
 import net.minecraft.core.component.DataComponents
@@ -111,7 +111,7 @@ object CauldronHandlers {
         pos: BlockPos,
         state: BlockState,
         result: ItemStack,
-        recipe: DippingRecipeInterface
+        recipe: CauldronRecipe
     ) {
         if (!player.inventory.add(result)) {
             // Player inventory is full, we drop the rest on the ground

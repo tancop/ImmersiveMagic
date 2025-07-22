@@ -1,9 +1,5 @@
 {
   "type": "immersivemagic:tool_dipping",
-  "potion": {
-    "type": "NORMAL",
-    "potion": "minecraft:poison"
-  },
   "item": [
     {
       "tag": "minecraft:swords"
@@ -12,10 +8,14 @@
       "tag": "minecraft:axes"
     }
   ],
+  "potion": {
+    "type": "NORMAL",
+    "potion": "minecraft:slowness"
+  },
   "server_components": {
     "immersivemagic:dipped_weapon": {
       "charges": 5,
-      "effect": "minecraft:poison"
+      "effect": "minecraft:slowness"
     }
   }
 }
