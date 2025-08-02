@@ -1,7 +1,7 @@
-// 1.21.1	2025-07-22T08:01:05.488926635	Recipes
-e1e020bac30d41cd3a42728f47eabb100b1ff40d data/immersivemagic/recipe/decay_lingering_potion.json
-40f6f95ee7899094f802bfcc5a051b7eb2b2e63b data/immersivemagic/recipe/decay_potion.json
-ba68649ffa1e74aae695da3ed47973caef8b99d6 data/immersivemagic/recipe/decay_splash_potion.json
+// 1.21.1	2025-08-02T11:11:02.727966129	Recipes
+a9571602acefbaef0799b12019a2146373d59f19 data/immersivemagic/recipe/decay_lingering_potion.json
+6737a8d521ff184a96f4c13cd2aa81edb3ed25da data/immersivemagic/recipe/decay_potion.json
+916c22af7699902b78467bd22430253c6607d343 data/immersivemagic/recipe/decay_splash_potion.json
 129a81a317e03e94ea39aaa110cba9e23c14f5f7 data/immersivemagic/recipe/dip_blade_in_long_poison.json
 ec55212cd17ad487152b6576a6ba814521a6a383 data/immersivemagic/recipe/dip_blade_in_long_slowness.json
 0dd6411a588e07bc151192d4d2da085041fe08a9 data/immersivemagic/recipe/dip_blade_in_long_weakness.json

@@ -169,7 +169,10 @@ object CauldronHandlers {
                 PotionContents.createItemStack(Items.POTION, Potions.WATER)
             } else {
                 // Stored potion if there is one, mundane if not (= invalid recipe)
-                entity.storedPotion?.getStack() ?: PotionContents.createItemStack(Items.POTION, Potions.MUNDANE)
+                entity.storedPotion?.getStack(level.registryAccess()) ?: PotionContents.createItemStack(
+                    Items.POTION,
+                    Potions.MUNDANE
+                )
             }
 
             if (!player.isCreative) stack.shrink(1)

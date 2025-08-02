@@ -77,7 +77,7 @@ class LayeredCauldronBlockEntity(pos: BlockPos, state: BlockState) :
         // No particles for pure water
         if (items.isEmpty()) return
 
-        val color = storedPotion?.getEffectColor() ?: FastColor.ARGB32.color(255, 255, 255, 255)
+        val color = storedPotion?.getEffectColor(level.registryAccess()) ?: FastColor.ARGB32.color(255, 255, 255, 255)
 
         val particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color)
         (level as ServerLevel).sendParticles(

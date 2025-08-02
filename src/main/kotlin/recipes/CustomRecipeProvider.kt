@@ -1,7 +1,10 @@
 package dev.tancop.immersivemagic.recipes
 
 import com.mojang.datafixers.util.Either
-import dev.tancop.immersivemagic.*
+import dev.tancop.immersivemagic.DippedWeaponComponent
+import dev.tancop.immersivemagic.FireType
+import dev.tancop.immersivemagic.ImmersiveMagic
+import dev.tancop.immersivemagic.PotionRef
 import net.minecraft.core.Holder
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponentPatch
@@ -10,8 +13,6 @@ import net.minecraft.data.recipes.RecipeOutput
 import net.minecraft.data.recipes.RecipeProvider
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.ItemTags
-import net.minecraft.util.FastColor
-import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potion
@@ -247,23 +248,19 @@ class CustomRecipeProvider(output: PackOutput, registries: CompletableFuture<Hol
     fun addWitherPotions(recipeOutput: RecipeOutput) {
         BrewingRecipeBuilder(
             listOf(Ingredient.of(Items.NETHER_WART), Ingredient.of(Items.WITHER_ROSE)), FireType.SOUL,
-            PotionRef.of(
-                "potion.immersivemagic.decay_potion", listOf(
-                    PotionEffect(MobEffects.WITHER, 800)
-                ), FastColor.ARGB32.opaque(0x736156),
-                fallbackName = "Potion of Decay"
-            )
+            PotionRef.Custom(
+                ResourceLocation.fromNamespaceAndPath(ImmersiveMagic.MOD_ID, "decay"),
+                PotionRef.PotionType.NORMAL
+            ),
         ).save(recipeOutput, "immersivemagic:decay_potion")
 
         BrewingRecipeBuilder(
             listOf(Ingredient.of(Items.NETHER_WART), Ingredient.of(Items.WITHER_ROSE), Ingredient.of(Items.GUNPOWDER)),
             FireType.SOUL,
-            PotionRef.of(
-                "potion.immersivemagic.decay_splash_potion", listOf(
-                    PotionEffect(MobEffects.WITHER, 800)
-                ), FastColor.ARGB32.opaque(0x736156), type = PotionRef.PotionType.SPLASH,
-                fallbackName = "Splash Potion of Decay"
-            )
+            PotionRef.Custom(
+                ResourceLocation.fromNamespaceAndPath(ImmersiveMagic.MOD_ID, "decay"),
+                PotionRef.PotionType.SPLASH
+            ),
         ).save(recipeOutput, "immersivemagic:decay_splash_potion")
 
         BrewingRecipeBuilder(
@@ -272,16 +269,12 @@ class CustomRecipeProvider(output: PackOutput, registries: CompletableFuture<Hol
                 Ingredient.of(Items.WITHER_ROSE),
                 Ingredient.of(Items.GUNPOWDER),
                 Ingredient.of(Items.DRAGON_BREATH)
-            ), FireType.SOUL,
-            PotionRef.of(
-                "potion.immersivemagic.decay_lingering_potion",
-                listOf(
-                    PotionEffect(MobEffects.WITHER, 800)
-                ),
-                FastColor.ARGB32.opaque(0x736156),
-                type = PotionRef.PotionType.LINGERING,
-                fallbackName = "Lingering Potion of Decay"
-            )
+            ),
+            FireType.SOUL,
+            PotionRef.Custom(
+                ResourceLocation.fromNamespaceAndPath(ImmersiveMagic.MOD_ID, "decay"),
+                PotionRef.PotionType.LINGERING
+            ),
         ).save(recipeOutput, "immersivemagic:decay_lingering_potion")
     }
 

@@ -4,16 +4,14 @@ import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.Holder
+import net.minecraft.core.RegistryAccess
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.item.alchemy.PotionContents
-import net.minecraft.world.item.alchemy.Potions
-import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 sealed class PotionRef {
@@ -21,11 +19,11 @@ sealed class PotionRef {
         NORMAL, SPLASH, LINGERING
     }
 
-    data class GamePotion(val potion: Holder<Potion>, val potionType: PotionType) : PotionRef() {
-        override fun getStack(): ItemStack {
+    data class Vanilla(val potion: Holder<Potion>, val type: PotionType) : PotionRef() {
+        override fun getStack(registries: RegistryAccess): ItemStack {
             val contents = PotionContents(potion)
             val stack = ItemStack(
-                when (potionType) {
+                when (type) {
                     PotionType.NORMAL -> Items.POTION
                     PotionType.SPLASH -> Items.SPLASH_POTION
                     PotionType.LINGERING -> Items.LINGERING_POTION
@@ -35,15 +33,15 @@ sealed class PotionRef {
             return stack
         }
 
-        override fun getEffectColor(): Int = PotionContents.getColor(potion)
+        override fun getEffectColor(registries: RegistryAccess): Int = PotionContents.getColor(potion)
 
         companion object {
-            val CODEC: Codec<GamePotion> = RecordCodecBuilder.create { instance ->
+            val CODEC: Codec<Vanilla> = RecordCodecBuilder.create { instance ->
                 instance.group(
                     ResourceLocation.CODEC.fieldOf("potion").forGetter { it.potion.key!!.location() },
-                    Codec.STRING.fieldOf("type").forGetter { it.potionType.name },
+                    Codec.STRING.fieldOf("type").forGetter { it.type.name },
                 ).apply(instance) { potion, type ->
-                    GamePotion(
+                    Vanilla(
                         BuiltInRegistries.POTION.wrapAsHolder(
                             BuiltInRegistries.POTION.get(potion)
                                 ?: throw IllegalArgumentException("Invalid potion: $potion")
@@ -55,71 +53,54 @@ sealed class PotionRef {
         }
     }
 
-    data class CustomPotion(
-        val name: String,
-        val effects: List<PotionEffect>,
-        val color: Int,
+    data class Custom(
+        val potion: ResourceLocation,
         val type: PotionType,
-        val fallbackName: String?
     ) : PotionRef() {
-        override fun getStack(): ItemStack {
-            val contents = PotionContents(
-                Optional.of(Potions.WATER),
-                Optional.of(color),
-                effects.map { it.toInstance() }
-            )
-            val stack = ItemStack(
-                when (type) {
-                    PotionType.NORMAL -> Items.POTION
-                    PotionType.SPLASH -> Items.SPLASH_POTION
-                    PotionType.LINGERING -> Items.LINGERING_POTION
-                }, 1
-            )
-            stack.set(DataComponents.POTION_CONTENTS, contents)
-            stack.set(
-                DataComponents.ITEM_NAME, when (fallbackName) {
-                    null -> Component.translatable(name)
-                    else -> Component.translatableWithFallback(name, fallbackName)
-                }
-            )
-            return stack
+        var potionHolder: Holder<CustomPotion>? = null
+
+        fun loadHolder(registries: RegistryAccess) {
+            if (potionHolder == null) {
+                val registry = registries.registry(ImmersiveMagic.CUSTOM_POTIONS_REGISTRY_KEY).get()
+
+                val holder = registry.wrapAsHolder(
+                    registry.get(potion) ?: throw IllegalArgumentException("Unknown potion: $potion")
+                )
+                potionHolder = holder
+            }
         }
 
-        override fun getEffectColor(): Int = color
+        override fun getStack(registries: RegistryAccess): ItemStack {
+            loadHolder(registries)
+            return potionHolder!!.value().getStack(type)
+        }
+
+        override fun getEffectColor(registries: RegistryAccess): Int {
+            loadHolder(registries)
+            return potionHolder!!.value().color
+        }
 
         companion object {
-            val CODEC: Codec<CustomPotion> = RecordCodecBuilder.create { instance ->
+            val CODEC: Codec<Custom> = RecordCodecBuilder.create { instance ->
                 instance.group(
-                    Codec.STRING.fieldOf("name").forGetter(CustomPotion::name),
-                    Codec.STRING.optionalFieldOf("fallback_name").forGetter { Optional.ofNullable(it.fallbackName) },
-                    PotionEffect.CODEC.listOf().fieldOf("effects").forGetter(CustomPotion::effects),
-                    ColorCodecs.RGB.fieldOf("color").forGetter(CustomPotion::color),
+                    ResourceLocation.CODEC.fieldOf("custom_potion").forGetter { it.potion },
                     Codec.STRING.fieldOf("type").forGetter { it.type.name },
-                ).apply(instance) { name, fallbackName, effects, color, type ->
-                    CustomPotion(name, effects, color, PotionType.valueOf(type), fallbackName.getOrNull())
+                ).apply(instance) { potion, type ->
+                    Custom(potion, PotionType.valueOf(type))
                 }
             }
         }
     }
 
-    abstract fun getStack(): ItemStack
-    abstract fun getEffectColor(): Int
+    abstract fun getStack(registries: RegistryAccess): ItemStack
+    abstract fun getEffectColor(registries: RegistryAccess): Int
 
     companion object {
         fun of(potion: Holder<Potion>, type: PotionType = PotionType.NORMAL): PotionRef =
-            GamePotion(potion, type)
-
-        fun of(
-            name: String,
-            effects: List<PotionEffect>,
-            color: Int,
-            type: PotionType = PotionType.NORMAL,
-            fallbackName: String? = null,
-        ): PotionRef =
-            CustomPotion(name, effects, color, type, fallbackName)
+            Vanilla(potion, type)
 
         val CODEC: Codec<PotionRef?> =
-            Codec.xor(GamePotion.CODEC, CustomPotion.CODEC).xmap({ either ->
+            Codec.xor(Vanilla.CODEC, Custom.CODEC).xmap({ either ->
                 val left = either.left().getOrNull()
                 if (left != null) {
                     return@xmap left
@@ -131,8 +112,8 @@ sealed class PotionRef {
                 null
             }, { res ->
                 when (res) {
-                    is GamePotion -> Either.left(res)
-                    is CustomPotion -> Either.right(res)
+                    is Vanilla -> Either.left(res)
+                    is Custom -> Either.right(res)
                     else -> null
                 }
             })

@@ -17,22 +17,6 @@
   ],
   "result": {
     "type": "LINGERING",
-    "color": {
-      "blue": 86,
-      "green": 97,
-      "red": 115
-    },
-    "effects": [
-      {
-        "ambient": false,
-        "amplifier": 0,
-        "duration": 800,
-        "effect": "minecraft:wither",
-        "showIcon": true,
-        "visible": true
-      }
-    ],
-    "fallback_name": "Lingering Potion of Decay",
-    "name": "potion.immersivemagic.decay_lingering_potion"
+    "custom_potion": "immersivemagic:decay"
   }
 }

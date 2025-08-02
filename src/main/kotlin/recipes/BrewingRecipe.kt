@@ -5,6 +5,7 @@ import dev.tancop.immersivemagic.ImmersiveMagic
 import dev.tancop.immersivemagic.MaybeSerializable
 import dev.tancop.immersivemagic.PotionRef
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.RegistryAccess
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.Recipe
@@ -45,7 +46,8 @@ class BrewingRecipe(
         return true
     }
 
-    override fun assemble(input: BrewingRecipeInput, registries: HolderLookup.Provider): ItemStack = result.getStack()
+    override fun assemble(input: BrewingRecipeInput, registries: HolderLookup.Provider): ItemStack =
+        result.getStack(registries as RegistryAccess)
 
     // No way to make these work with recipe books
     override fun isSpecial(): Boolean = true
@@ -57,7 +59,8 @@ class BrewingRecipe(
     // No dimension requirements
     override fun canCraftInDimensions(x: Int, y: Int): Boolean = true
 
-    override fun getResultItem(p0: HolderLookup.Provider): ItemStack = result.getStack()
+    override fun getResultItem(registries: HolderLookup.Provider): ItemStack =
+        result.getStack(registries as RegistryAccess)
 
     // This is a server-side mod, syncing recipes to the client can disconnect it
     override fun immersiveMagic_isSerializable(): Boolean = false

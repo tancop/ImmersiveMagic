@@ -34,10 +34,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import net.neoforged.neoforge.registries.DeferredHolder
-import net.neoforged.neoforge.registries.DeferredRegister
-import net.neoforged.neoforge.registries.NewRegistryEvent
-import net.neoforged.neoforge.registries.RegistryBuilder
+import net.neoforged.neoforge.registries.*
 import java.util.function.Supplier
 
 
@@ -132,6 +129,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         modEventBus.addListener<NewRegistryEvent> { event ->
             event.register(SPELL_COMPONENTS_REGISTRY)
         }
+        modEventBus.addListener<DataPackRegistryEvent.NewRegistry> { event ->
+            event.dataPackRegistry(CUSTOM_POTIONS_REGISTRY_KEY, CustomPotion.CODEC)
+        }
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC)
     }
@@ -206,7 +206,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             RECIPE_SERIALIZERS.register("soul_binding", Supplier { SoulBindingRecipeSerializer() })
 
         val SPELL_COMPONENTS_REGISTRY_KEY: ResourceKey<Registry<Unit>> =
-            ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "spell_components"))
+            ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "spell_component"))
 
         val SPELL_COMPONENTS_REGISTRY: Registry<Unit> = RegistryBuilder(SPELL_COMPONENTS_REGISTRY_KEY)
             .create()
@@ -248,6 +248,9 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
                     .persistent(DippedWeaponComponent.CODEC.codec())
                     .networkSynchronized(EmptyStreamCodec(DippedWeaponComponent(0, Either.left(null))))
             }
+
+        val CUSTOM_POTIONS_REGISTRY_KEY: ResourceKey<Registry<CustomPotion>> =
+            ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "potion"))
 
         init {
             SPELL_COMPONENTS.register("fireball_spell", Supplier { })
