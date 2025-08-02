@@ -1,8 +1,8 @@
 {
   "config.immersivemagic.disable_vanilla_brewing": "Disable Vanilla Brewing Recipes",
-  "potion.immersivemagic.decay_potion": "Potion of Decay",
-  "potion.immersivemagic.decay_splash_potion": "Splash Potion of Decay",
-  "potion.immersivemagic.decay_lingering_potion": "Lingering Potion of Decay",
+  "item.immersivemagic.potion.effect.decay": "Potion of Decay",
+  "item.immersivemagic.splash_potion.effect.decay": "Splash Potion of Decay",
+  "item.immersivemagic.lingering_potion.effect.decay": "Lingering Potion of Decay",
   "ui.immersivemagic.spell_charges": "charges",
   "spell.immersivemagic.fireball": "Fireball",
   "spell.immersivemagic.evoker_fangs": "Evoker Fangs"
