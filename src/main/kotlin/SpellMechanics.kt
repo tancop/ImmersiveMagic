@@ -42,6 +42,13 @@ fun <T : PlayerInteractEvent> handleSpellCast(
                 onSuccess(event)
                 return
             }
+        } else if (component.maxCharges == -1) {
+            // infinite charges
+            val result = component.castFunction(event)
+            if (result == InteractionResult.SUCCESS) {
+                onSuccess(event)
+                return
+            }
         }
     }
 }

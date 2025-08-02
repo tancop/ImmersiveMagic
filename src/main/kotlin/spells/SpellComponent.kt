@@ -16,9 +16,14 @@ abstract class SpellComponent : LoreProvider {
     abstract val maxCharges: Int
     abstract fun withLowerCharge(): SpellComponent
 
-    override fun getLore(): List<Component> = listOf(
-        Component.literal("${charges}/${maxCharges} ")
-            .withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(false))
-            .append(Component.translatableWithFallback("ui.immersivemagic.spell_charges", "charges"))
-    )
+    override fun getLore(): List<Component> =
+        if (maxCharges == -1) {
+            listOf(Component.translatableWithFallback("ui.immersivemagic.infinite_spell_charges", "Infinite charges"))
+        } else {
+            listOf(
+                Component.literal("${charges}/${maxCharges} ")
+                    .withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(false))
+                    .append(Component.translatableWithFallback("ui.immersivemagic.spell_charges", "charges"))
+            )
+        }
 }

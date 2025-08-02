@@ -4,6 +4,7 @@
   "item.immersivemagic.splash_potion.effect.decay": "Splash Potion of Decay",
   "item.immersivemagic.lingering_potion.effect.decay": "Lingering Potion of Decay",
   "ui.immersivemagic.spell_charges": "charges",
+  "ui.immersivemagic.infinite_spell_charges": "Infinite charges",
   "spell.immersivemagic.fireball": "Fireball",
   "spell.immersivemagic.evoker_fangs": "Evoker Fangs"
 }
