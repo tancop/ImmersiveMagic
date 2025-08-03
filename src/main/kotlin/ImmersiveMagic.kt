@@ -2,10 +2,7 @@ package dev.tancop.immersivemagic
 
 import com.mojang.datafixers.util.Either
 import dev.tancop.immersivemagic.recipes.*
-import dev.tancop.immersivemagic.spells.EmptyScrollComponent
-import dev.tancop.immersivemagic.spells.EvokerFangsSpellComponent
-import dev.tancop.immersivemagic.spells.FireballSpellComponent
-import dev.tancop.immersivemagic.spells.SpellComponent
+import dev.tancop.immersivemagic.spells.*
 import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.component.DataComponents
@@ -234,6 +231,14 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
             }
 
         @Suppress("unused")
+        val FORCE_PUSH_SPELL: DeferredHolder<DataComponentType<*>, DataComponentType<ForcePushSpellComponent>> =
+            DATA_COMPONENT_TYPES.registerComponentType("force_push_spell") { builder ->
+                builder
+                    .persistent(ForcePushSpellComponent.CODEC.codec())
+                    .networkSynchronized(EmptyStreamCodec(ForcePushSpellComponent(0, 3)))
+            }
+
+        @Suppress("unused")
         val EMPTY_SCROLL: DeferredHolder<DataComponentType<*>, DataComponentType<EmptyScrollComponent>> =
             DATA_COMPONENT_TYPES.registerComponentType("empty_scroll") { builder ->
                 builder
@@ -255,6 +260,7 @@ class ImmersiveMagic(modEventBus: IEventBus, modContainer: ModContainer) {
         init {
             SPELL_COMPONENTS.register("fireball_spell", Supplier { })
             SPELL_COMPONENTS.register("evoker_fangs_spell", Supplier { })
+            SPELL_COMPONENTS.register("force_push_spell", Supplier { })
         }
 
         fun gatherData(event: GatherDataEvent) {

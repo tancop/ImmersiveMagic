@@ -30,23 +30,19 @@ night vision potion.
 
 We all know you can shoot fire charges from a dispenser, but what about your hands? **Fireball** lets you do that.
 Spells are a **new type of item** you can cast by **right clicking** with one in your hand. Right now Immersive Magic
-adds two of them:
+adds these:
 
-* **Evoker Fangs** - spawns a line of 8 fangs in front of you like the evoker's long-range attack
-* **Fireball** - shoots an explosive fireball that sets things on fire
+* **Evoker Fangs** (from **Evoker** obviously) - spawns a line of 8 fangs in front of you like the evoker's long-range
+  attack
+* **Fireball** (from **Blaze**) - shoots an explosive fireball that sets things on fire
+* **Unrelenting Force** (from **Breeze**) - pushes away entities in front of you
 
 I got more of them planned, so stay tuned for updates!
 
-# Soul Binding
+## Soul Binding
 
 Ok, but how do you actually get spells? To get started craft an **empty scroll** with a piece of **paper** and an
 **amethyst shard**. Equip it in your off hand and **kill a mob** to trap its soul in the scroll. This lets you
-cast the mob's associated spell a limited amount of times. **Nothing happens** if the mob you killed doesn't have one.
+cast **the mob's spell** a limited amount of times. If the mob you killed **doesn't have one** nothing happens.
 
 You can also use **spells as a container** instead of crafting a new scroll every time.
-
-* **Evoker** gives **Evoker Fangs**, obviously
-* **Blaze** gives **Fireball**
-
-Of course, there's a catch. Soul binding costs XP, the same amount you get from killing the mob. This means you get **no
-XP reward** and you need to have at least that amount on your bar. Still worth it if you ask me.
